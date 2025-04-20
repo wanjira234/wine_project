@@ -1,4 +1,4 @@
-from ..common.base import db
+from extensions import db
 from ..common.enums import (
     ExperienceLevel, DrinkingFrequency, WineType, BodyType,
     SweetnessLevel, Currency
@@ -61,10 +61,8 @@ class UserPreference(db.Model):
             setattr(self, preference_type, current_prefs)
             self.save()
 
-
-
     def save(self):
-        """Save changes to database."""
+        """Save changes to the database."""
         db.session.add(self)
         db.session.commit()
 

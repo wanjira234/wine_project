@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block extra_head %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+            <img
+                src="{{ url_for('static', filename='images/logo.svg') }}"
+                alt="Wine Expert"
+                height="32"
+            />
+            <span>Admin Panel</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-section-title">MAIN</span>
+                <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('admin.users') }}" class="nav-link">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-section-title">CATALOG</span>
+                <a href="{{ url_for('admin.inventory') }}" class="nav-link">
+                    <i class="fas fa-wine-bottle"></i>
+                    <span>Inventory</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-section-title">SETTINGS</span>
+                <a href="{{ url_for('admin.settings') }}" class="nav-link active">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Application Settings</h5>
+            </div>
+            <div class="card-body">
+                <form id="settingsForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- General Settings -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">General Settings</h6>
+                        <div class="mb-3">
+                            <label for="siteName" class="form-label">Site Name</label>
+                            <input type="text" class="form-control" id="siteName" name="site_name" 
+                                   value="{{ settings.get('site_name', 'Wine Recommender') }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="siteDescription" class="form-label">Site Description</label>
+                            <textarea class="form-control" id="siteDescription" name="site_description" 
+                                      rows="2">{{ settings.get('site_description', '') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Email Settings -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Email Settings</h6>
+                        <div class="mb-3">
+                            <label for="smtpServer" class="form-label">SMTP Server</label>
+                            <input type="text" class="form-control" id="smtpServer" name="smtp_server" 
+                                   value="{{ settings.get('smtp_server', '') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtpPort" class="form-label">SMTP Port</label>
+                            <input type="number" class="form-control" id="smtpPort" name="smtp_port" 
+                                   value="{{ settings.get('smtp_port', '587') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtpUsername" class="form-label">SMTP Username</label>
+                            <input type="text" class="form-control" id="smtpUsername" name="smtp_username" 
+                                   value="{{ settings.get('smtp_username', '') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtpPassword" class="form-label">SMTP Password</label>
+                            <input type="password" class="form-control" id="smtpPassword" name="smtp_password" 
+                                   value="{{ settings.get('smtp_password', '') }}">
+                        </div>
+                    </div>
+
+                    <!-- Inventory Settings -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Inventory Settings</h6>
+                        <div class="mb-3">
+                            <label for="lowStockThreshold" class="form-label">Low Stock Threshold</label>
+                            <input type="number" class="form-control" id="lowStockThreshold" name="low_stock_threshold" 
+                                   value="{{ settings.get('low_stock_threshold', '10') }}" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="defaultStock" class="form-label">Default Stock Level</label>
+                            <input type="number" class="form-control" id="defaultStock" name="default_stock" 
+                                   value="{{ settings.get('default_stock', '50') }}" min="0" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('settingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const settings = {};
+    for (let [key, value] of formData.entries()) {
+        if (key !== 'csrf_token') {  // Exclude CSRF token from settings
+            settings[key] = value;
+        }
+    }
+    
+    fetch('{{ url_for("admin.update_settings") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': formData.get('csrf_token')
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert('Settings saved successfully!');
+        } else {
+            alert('Error saving settings: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error saving settings. Please try again.');
+    });
+});
+</script>
+{% endblock %} 

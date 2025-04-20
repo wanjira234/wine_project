@@ -1,40 +1,48 @@
+"""
+Script to create an admin user in the database.
+"""
+
 import os
 import sys
-from pathlib import Path
-
-# Add the current directory to Python path
-sys.path.append(str(Path(__file__).parent))
-
+from getpass import getpass
 from app import create_app
+from extensions import db
 from models.user.user import User
-from models.common.base import db
-from models.common.enums import UserRole
 
-def create_admin_user():
-    # Create Flask app with development config
+def create_admin_user(email, password, name=None):
+    """Create a new admin user."""
+    try:
+        # Create user
+        user = User.create_user(email=email, password=password, name=name)
+        user.is_admin = True
+        db.session.commit()
+        print(f"Admin user '{email}' created successfully!")
+        return True
+    except Exception as e:
+        print(f"Error creating admin user: {e}")
+        return False
+
+def main():
+    """Main function to create admin user."""
     app = create_app('development')
     
     with app.app_context():
-        # Initialize database if it doesn't exist
-        db.create_all()
+        # Get admin user details
+        email = input("Enter admin email: ")
+        password = getpass("Enter admin password: ")
+        confirm_password = getpass("Confirm password: ")
         
-        # Check if admin already exists
-        admin = User.query.filter_by(email='admin@wineapp.com').first()
-        if not admin:
-            # Create admin user
-            admin = User.create_user(
-                email='admin@wineapp.com',
-                password='Admin123!',
-                name='Admin User'
-            )
-            admin.is_admin = True
-            admin.role = UserRole.ADMIN
-            db.session.commit()
-            print("Admin user created successfully!")
-            print("Email: admin@wineapp.com")
-            print("Password: Admin123!")
+        if password != confirm_password:
+            print("Passwords do not match!")
+            sys.exit(1)
+        
+        name = input("Enter admin name (optional): ").strip() or None
+        
+        # Create admin user
+        if create_admin_user(email, password, name):
+            sys.exit(0)
         else:
-            print("Admin user already exists!")
+            sys.exit(1)
 
 if __name__ == '__main__':
-    create_admin_user() 
+    main() 

@@ -1,7 +1,8 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
-from ..common.base import db, BaseModel
+from extensions import db
+from ..common.base import BaseModel
 from ..common.enums import UserRole
 from .preferences import UserPreference
 from datetime import datetime
@@ -22,8 +23,8 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
 
     # Relationships
-    preferences = db.relationship('UserPreference', backref='user', uselist=False, 
-                                cascade='all, delete-orphan', lazy='joined')
+    preferences = relationship('UserPreference', backref='user', uselist=False, 
+                             cascade='all, delete-orphan', lazy='select')
 
     def __init__(self, username, email, name=None, **kwargs):
         super().__init__(**kwargs)

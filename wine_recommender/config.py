@@ -23,12 +23,25 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     UPLOAD_FOLDER = os.path.join(BASEDIR, 'static', 'uploads')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    
+    # Application settings
+    DEBUG = True
+    TESTING = False
+    DEVELOPMENT = True
+    
+    # Ensure upload folder exists
+    def __init__(self):
+        try:
+            os.makedirs(self.UPLOAD_FOLDER)
+        except OSError:
+            pass
 
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True
     DEVELOPMENT = True
-    
+    TESTING = False
+
 class TestingConfig(Config):
     """Testing configuration."""
     TESTING = True

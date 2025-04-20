@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="row">
-        <!-- Sidebar -->
+    <!-- Sidebar -->
         <div class="col-lg-3">
             <div class="card">
                 <div class="card-body">
@@ -21,53 +21,53 @@
                         </a>
                         <a href="{{ url_for('admin.inventory') }}" class="list-group-item list-group-item-action active">
                             <i class="fas fa-box me-2"></i> Inventory
-                        </a>
-                    </div>
+                </a>
+            </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main Content -->
+    <!-- Main Content -->
         <div class="col-lg-9">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Wine Inventory</h5>
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWineModal">
-                        <i class="fas fa-plus me-2"></i>Add Wine
-                    </button>
-                </div>
+                    <i class="fas fa-plus me-2"></i>Add Wine
+                </button>
+            </div>
                 <div class="card-body">
-                    <!-- Filters -->
-                    <div class="filters-section mb-4">
-                        <div class="row g-3">
+            <!-- Filters -->
+            <div class="filters-section mb-4">
+                <div class="row g-3">
                             <div class="col-md-4">
                                 <select class="form-select" id="typeFilter" onchange="updateFilters()">
-                                    <option value="">All Types</option>
-                                    {% for type in wine_types %}
+                            <option value="">All Types</option>
+                            {% for type in wine_types %}
                                     <option value="{{ type.value }}" {% if request.args.get('type') == type.value %}selected{% endif %}>{{ type.value|title }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                            {% endfor %}
+                        </select>
+                    </div>
                             <div class="col-md-4">
                                 <select class="form-select" id="regionFilter" onchange="updateFilters()">
-                                    <option value="">All Regions</option>
-                                    {% for region in wine_regions %}
+                            <option value="">All Regions</option>
+                            {% for region in wine_regions %}
                                     <option value="{{ region.value }}" {% if request.args.get('region') == region.value %}selected{% endif %}>{{ region.value|replace('_', ' ')|title }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                            {% endfor %}
+                        </select>
+                    </div>
                             <div class="col-md-4">
-                                <div class="input-group">
+                        <div class="input-group">
                                     <input type="text" class="form-control" id="searchInput" placeholder="Search wines..." value="{{ request.args.get('search', '') }}">
                                     <button class="btn btn-outline-secondary" type="button" onclick="updateFilters()">
-                                        <i class="fas fa-search"></i>
-                                    </button>
-                                </div>
-                            </div>
+                                <i class="fas fa-search"></i>
+                            </button>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Inventory Table -->
+            <!-- Inventory Table -->
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -102,8 +102,8 @@
                                     <td>${{ "%.2f"|format(wine.price) }}</td>
                                     <td>
                                         <span class="badge {% if wine.stock <= 0 %}bg-danger{% elif wine.stock <= 10 %}bg-warning{% else %}bg-success{% endif %}">
-                                            {{ wine.stock }}
-                                        </span>
+                                                {{ wine.stock }}
+                                            </span>
                                     </td>
                                     <td>
                                         <div class="btn-group">
@@ -164,46 +164,39 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="addWineForm" action="{{ url_for('admin.add_wine') }}" method="POST">
+                <form id="addWineForm" action="{{ url_for('admin.add_wine') }}" method="POST" enctype="multipart/form-data">
+                    {{ form.csrf_token }}
                     <div class="mb-3">
                         <label class="form-label">Name</label>
-                        <input type="text" class="form-control" name="name" required>
+                        {{ form.name(class="form-control") }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Type</label>
-                        <select class="form-select" name="type" required>
-                            {% for type in wine_types %}
-                            <option value="{{ type.value }}">{{ type.value|title }}</option>
-                            {% endfor %}
-                        </select>
+                        {{ form.type(class="form-select") }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Region</label>
-                        <select class="form-select" name="region" required>
-                            {% for region in wine_regions %}
-                            <option value="{{ region.value }}">{{ region.value|replace('_', ' ')|title }}</option>
-                            {% endfor %}
-                        </select>
+                        {{ form.region(class="form-select") }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Year</label>
-                        <input type="number" class="form-control" name="year">
+                        {{ form.year(class="form-control") }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Price</label>
-                        <input type="number" class="form-control" name="price" step="0.01" required>
+                        {{ form.price(class="form-control") }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Initial Stock</label>
-                        <input type="number" class="form-control" name="stock" value="0" required>
+                        {{ form.stock(class="form-control") }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" name="description" rows="3"></textarea>
+                        {{ form.description(class="form-control", rows="3") }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Image URL</label>
-                        <input type="url" class="form-control" name="image_url">
+                        {{ form.image_url(class="form-control") }}
                     </div>
                 </form>
             </div>
@@ -291,14 +284,71 @@ document.getElementById('searchInput').addEventListener('keypress', function(e) 
 });
 
 function editWine(wineId) {
-    // Implement edit functionality
-    console.log('Edit wine:', wineId);
+    // Fetch wine data
+    fetch(`/admin/wine/${wineId}`)
+        .then(response => response.json())
+        .then(wine => {
+            // Populate form fields
+            const form = document.getElementById('addWineForm');
+            form.name.value = wine.name;
+            form.type.value = wine.type;
+            form.region.value = wine.region;
+            form.year.value = wine.year || '';
+            form.price.value = wine.price;
+            form.stock.value = wine.stock;
+            form.description.value = wine.description || '';
+            form.image_url.value = wine.image_url || '';
+            
+            // Change form action to update endpoint
+            form.action = `/admin/wine/${wineId}/update`;
+            
+            // Update modal title and submit button
+            document.querySelector('#addWineModal .modal-title').textContent = 'Edit Wine';
+            document.querySelector('#addWineModal .btn-primary').textContent = 'Update Wine';
+            
+            // Show modal
+            new bootstrap.Modal(document.getElementById('addWineModal')).show();
+        })
+        .catch(error => {
+            console.error('Error fetching wine data:', error);
+            alert('Failed to load wine data');
+        });
 }
+
+// Add form submission handler
+document.getElementById('addWineForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const url = this.action;
+    
+    fetch(url, {
+                    method: 'POST',
+        body: formData,
+                    headers: {
+            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.href = '/admin/inventory';
+                    } else {
+            throw new Error('Failed to submit form');
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting form:', error);
+        alert('Failed to submit form');
+    });
+});
 
 function deleteWine(wineId) {
     if (confirm('Are you sure you want to delete this wine?')) {
         fetch(`/admin/wine/${wineId}/delete`, {
             method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            }
         })
         .then(response => response.json())
         .then(data => {
@@ -307,6 +357,10 @@ function deleteWine(wineId) {
             } else {
                 alert('Failed to delete wine');
             }
+        })
+        .catch(error => {
+            console.error('Error deleting wine:', error);
+            alert('Failed to delete wine');
         });
     }
 }

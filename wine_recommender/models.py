@@ -1,8 +1,14 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
+from extensions import db
 
-db = SQLAlchemy()
+# Import all models to ensure they are registered with SQLAlchemy
+from models.user.user import User
+from models.user.preferences import UserPreference
+from models.wine import Wine
+from models.order import Order
+from models.order_item import OrderItem
+from models.settings import Settings
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
