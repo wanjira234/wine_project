@@ -1,0 +1,79 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
+%}
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-md-8 text-center">
+			<h1 class="display-4 mb-4">Welcome to Wine Recommender</h1>
+			<p class="lead">
+				Discover your perfect wine match with our AI-powered recommendation
+				system.
+			</p>
+
+			{% if not current_user.is_authenticated %}
+			<div class="mt-4">
+				<a
+					href="{{ url_for('auth.signup') }}"
+					class="btn btn-primary btn-lg me-3"
+					>Get Started</a
+				>
+				<a
+					href="{{ url_for('auth.login') }}"
+					class="btn btn-outline-primary btn-lg"
+					>Login</a
+				>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% endblock %} {% block extra_css %}
+<style>
+	.social-links a {
+		text-decoration: none;
+		transition: color 0.3s ease;
+	}
+
+	.social-links a:hover {
+		color: var(--bs-primary) !important;
+	}
+
+	.form-select {
+		border: 1px solid #dee2e6;
+	}
+
+	.form-select:focus {
+		border-color: var(--bs-primary);
+		box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+	}
+
+	.btn-primary {
+		background-color: #722f37;
+		border-color: #722f37;
+		transition: all 0.3s ease;
+	}
+
+	.btn-primary:hover {
+		background-color: #8b4513;
+		border-color: #8b4513;
+		transform: translateY(-2px);
+	}
+
+	.card {
+		transition: transform 0.3s ease;
+	}
+
+	.card:hover {
+		transform: translateY(-5px);
+	}
+
+	.text-primary {
+		color: #722f37 !important;
+	}
+
+	.author-info {
+		padding: 1rem;
+		border-radius: 0.5rem;
+		background-color: rgba(114, 47, 55, 0.1);
+	}
+</style>
+{% endblock %}

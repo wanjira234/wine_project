@@ -1,0 +1,65 @@
+{% extends "base.html" %} {% block title %}Wine Prediction{% endblock %} {%
+block content %}
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-md-8">
+			<h1 class="display-4 mb-4">Wine Prediction</h1>
+			<p class="lead mb-4">
+				Get personalized wine recommendations based on your preferences.
+			</p>
+			<div class="card">
+				<div class="card-body">
+					<form>
+						<div class="mb-3">
+							<label class="form-label">Wine Type Preference</label>
+							<select class="form-select" required>
+								<option value="">Select wine type</option>
+								<option value="red">Red Wine</option>
+								<option value="white">White Wine</option>
+								<option value="rose">Rosé Wine</option>
+								<option value="sparkling">Sparkling Wine</option>
+							</select>
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Price Range</label>
+							<select class="form-select" required>
+								<option value="">Select price range</option>
+								<option value="budget">Under $15</option>
+								<option value="moderate">$15-30</option>
+								<option value="premium">$30-50</option>
+								<option value="luxury">$50+</option>
+							</select>
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Flavor Profile</label>
+							<div class="form-check">
+								<input
+									class="form-check-input"
+									type="checkbox"
+									value="fruity"
+								/>
+								<label class="form-check-label">Fruity</label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" value="dry" />
+								<label class="form-check-label">Dry</label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" value="sweet" />
+								<label class="form-check-label">Sweet</label>
+							</div>
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" value="bold" />
+								<label class="form-check-label">Bold</label>
+							</div>
+						</div>
+						<button type="submit" class="btn btn-primary">
+							Get Recommendations
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

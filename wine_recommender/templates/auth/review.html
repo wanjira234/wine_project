@@ -1,0 +1,275 @@
+{% extends "base.html" %} {% block title %}Review Your Preferences{% endblock %}
+{% block content %}
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-md-8">
+			<div class="card">
+				<div class="card-header">
+					<h3 class="mb-0">Review Your Preferences</h3>
+					<p class="text-muted mb-0">
+						Please review your information before creating your account
+					</p>
+				</div>
+				<div class="card-body">
+					<form method="POST" action="{{ url_for('auth.signup') }}">
+						<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+						<!-- Account Information -->
+						<div class="mb-4">
+							<h4 class="section-title">
+								<i class="fas fa-user-circle me-2"></i>Account Information
+							</h4>
+							<div class="row">
+								<div class="col-md-6">
+									<p><strong>Name:</strong> {{ form_data.name }}</p>
+									<input
+										type="hidden"
+										name="name"
+										value="{{ form_data.name }}"
+									/>
+								</div>
+								<div class="col-md-6">
+									<p><strong>Email:</strong> {{ form_data.email }}</p>
+									<input
+										type="hidden"
+										name="email"
+										value="{{ form_data.email }}"
+									/>
+									<input
+										type="hidden"
+										name="password"
+										value="{{ form_data.password }}"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<!-- Wine Experience -->
+						<div class="mb-4">
+							<h4 class="section-title">
+								<i class="fas fa-glass-cheers me-2"></i>Wine Knowledge
+							</h4>
+							<div class="row">
+								<div class="col-md-6">
+									<p>
+										<strong>Experience Level:</strong> {{
+										form_data.experience_level }}
+									</p>
+									<input
+										type="hidden"
+										name="experience_level"
+										value="{{ form_data.experience_level }}"
+									/>
+								</div>
+								<div class="col-md-6">
+									<p>
+										<strong>Drinking Frequency:</strong> {{
+										form_data.drinking_frequency }}
+									</p>
+									<input
+										type="hidden"
+										name="drinking_frequency"
+										value="{{ form_data.drinking_frequency }}"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<!-- Wine Style -->
+						<div class="mb-4">
+							<h4 class="section-title">
+								<i class="fas fa-wine-bottle me-2"></i>Wine Style
+							</h4>
+							<div class="row">
+								<div class="col-md-6">
+									<p><strong>Wine Types:</strong></p>
+									<div class="wine-types-tags">
+										{% for type in form_data.wine_types %}
+										<span class="badge bg-wine me-2 mb-2">
+											<i class="fas fa-wine-glass me-1"></i>
+											{{ type }}
+										</span>
+										<input type="hidden" name="wine_types" value="{{ type }}" />
+										{% endfor %}
+									</div>
+								</div>
+								<div class="col-md-6">
+									<p><strong>Preferred Regions:</strong></p>
+									<div class="region-tags">
+										{% for region in form_data.wine_regions %}
+										<span class="badge bg-wine me-2 mb-2">
+											<i class="fas fa-map-marker-alt me-1"></i>
+											{{ region }}
+										</span>
+										<input
+											type="hidden"
+											name="wine_regions"
+											value="{{ region }}"
+										/>
+										{% endfor %}
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Taste Profile -->
+						<div class="mb-4">
+							<h4 class="section-title">
+								<i class="fas fa-wine-glass-alt me-2"></i>Taste Profile
+							</h4>
+							<div class="row">
+								<div class="col-md-6">
+									<p>
+										<strong>Body Preference:</strong> {{
+										form_data.body_preference }}
+									</p>
+									<input
+										type="hidden"
+										name="body_preference"
+										value="{{ form_data.body_preference }}"
+									/>
+								</div>
+								<div class="col-md-6">
+									<p>
+										<strong>Sweetness Level:</strong> {{
+										form_data.sweetness_level }}
+									</p>
+									<input
+										type="hidden"
+										name="sweetness_level"
+										value="{{ form_data.sweetness_level }}"
+									/>
+								</div>
+							</div>
+							<div class="row mt-3">
+								<div class="col-12">
+									<p><strong>Preferred Wine Traits:</strong></p>
+									<div class="trait-tags">
+										{% for trait in form_data.wine_traits %}
+										<span class="badge bg-wine me-2 mb-2">
+											<i class="fas fa-{{ get_trait_icon(trait) }} me-1"></i>
+											{{ trait|replace('_', ' ')|title }}
+										</span>
+										<input
+											type="hidden"
+											name="wine_traits[]"
+											value="{{ trait }}"
+										/>
+										{% endfor %}
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Budget -->
+						<div class="mb-4">
+							<h4 class="section-title">
+								<i class="fas fa-dollar-sign me-2"></i>Budget
+							</h4>
+							<div class="row">
+								<div class="col-md-6">
+									<p>
+										<strong>Regular Budget:</strong> ${{
+										form_data.regular_budget }}
+									</p>
+									<input
+										type="hidden"
+										name="regular_budget"
+										value="{{ form_data.regular_budget }}"
+									/>
+								</div>
+								<div class="col-md-6">
+									<p>
+										<strong>Special Occasion Budget:</strong> ${{
+										form_data.special_budget }}
+									</p>
+									<input
+										type="hidden"
+										name="special_budget"
+										value="{{ form_data.special_budget }}"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<!-- Terms and Conditions -->
+						<div class="mb-4">
+							<div class="form-check">
+								<input
+									class="form-check-input"
+									type="checkbox"
+									id="terms"
+									name="terms"
+									required
+								/>
+								<label class="form-check-label" for="terms">
+									I agree to the
+									<a
+										href="#"
+										data-bs-toggle="modal"
+										data-bs-target="#termsModal"
+										>Terms of Service</a
+									>
+									and
+									<a
+										href="#"
+										data-bs-toggle="modal"
+										data-bs-target="#privacyModal"
+										>Privacy Policy</a
+									>
+								</label>
+							</div>
+						</div>
+
+						<div class="text-end">
+							<a
+								href="{{ url_for('auth.signup') }}"
+								class="btn btn-secondary me-2"
+							>
+								<i class="fas fa-arrow-left me-2"></i>Edit Preferences
+							</a>
+							<button type="submit" class="btn btn-primary">
+								<i class="fas fa-check me-2"></i>Create Account
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% block extra_css %}
+<style>
+	.bg-wine {
+		background-color: #722f37;
+	}
+	.section-title {
+		color: #722f37;
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px solid rgba(114, 47, 55, 0.1);
+	}
+	.badge {
+		font-weight: 500;
+		padding: 0.5rem 0.75rem;
+	}
+	.card-header {
+		background-color: #722f37;
+		color: white;
+	}
+	.card-header p {
+		color: rgba(255, 255, 255, 0.8);
+	}
+	.btn-primary {
+		background-color: #722f37;
+		border-color: #722f37;
+	}
+	.btn-primary:hover {
+		background-color: #8b4513;
+		border-color: #8b4513;
+	}
+</style>
+{% endblock %} {% endblock %}

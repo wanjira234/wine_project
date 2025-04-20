@@ -1,0 +1,517 @@
+{% extends "base.html" %} {% block title %}Your Wine Profile{% endblock %} {%
+block content %}
+<div class="profile-container">
+	<div class="profile-header">
+		<div class="avatar">
+			<span>{{ current_user.username[0] | upper }}</span>
+		</div>
+		<h1>{{ current_user.username }}'s Wine Profile</h1>
+		<p class="subtitle">
+			Manage your wine preferences and discover personalized recommendations
+		</p>
+		<button
+			type="button"
+			class="delete-profile"
+			data-bs-toggle="modal"
+			data-bs-target="#deleteProfileModal"
+		>
+			<i class="fas fa-user-times"></i> Delete Profile
+		</button>
+	</div>
+
+	<div class="preferences-grid">
+		<!-- Wine Experience Section -->
+		<div class="preference-box">
+			<div class="preference-header">
+				<i class="fas fa-wine-glass-alt"></i> Wine Experience
+			</div>
+			<div class="preference-content">
+				<form
+					class="preference-form"
+					action="{{ url_for('main.update_wine_experience') }}"
+					method="POST"
+				>
+					<div class="tags-wrapper">
+						<label class="tag">
+							<input type="checkbox" name="experience[]" value="expert" {% if
+							'expert' in preferences.experience %}checked{% endif %} >
+							<span class="tag-label">Expert</span>
+						</label>
+						<label class="tag">
+							<input type="checkbox" name="experience[]" value="regular" {% if
+							'regular' in preferences.experience %}checked{% endif %} >
+							<span class="tag-label">Regular Consumer</span>
+						</label>
+					</div>
+					<button type="submit" class="save-button">Save Changes</button>
+				</form>
+			</div>
+		</div>
+
+		<!-- Preferred Wine Types Section -->
+		<div class="preference-box">
+			<div class="preference-header">
+				<i class="fas fa-wine-bottle"></i> Preferred Wine Types
+			</div>
+			<div class="preference-content">
+				<form
+					class="preference-form"
+					action="{{ url_for('main.update_wine_types') }}"
+					method="POST"
+				>
+					<div class="tags-wrapper">
+						{% for type in ['Red', 'White', 'Rosé', 'Sparkling'] %}
+						<label class="tag">
+							<input
+								type="checkbox"
+								name="wine_types[]"
+								value="{{ type|lower }}"
+								{%
+								if
+								type|lower
+								in
+								preferences.wine_types
+								%}checked{%
+								endif
+								%}
+							/>
+							<span class="tag-label">{{ type }}</span>
+						</label>
+						{% endfor %}
+					</div>
+					<button type="submit" class="save-button">Save Changes</button>
+				</form>
+			</div>
+		</div>
+
+		<!-- Taste Preferences Section -->
+		<div class="preference-box">
+			<div class="preference-header">
+				<i class="fas fa-list"></i> Taste Preferences
+			</div>
+			<div class="preference-content">
+				<form
+					class="preference-form"
+					action="{{ url_for('main.update_taste_preferences') }}"
+					method="POST"
+				>
+					<div class="tags-wrapper">
+						{% for taste in ['Sweet', 'Dry', 'Tangy', 'Almond', 'Apple',
+						'Peach', 'Light Bodied', 'Thick', 'Complex'] %}
+						<label class="tag">
+							<input
+								type="checkbox"
+								name="taste[]"
+								value="{{ taste|lower }}"
+								{%
+								if
+								taste|lower
+								in
+								preferences.taste
+								%}checked{%
+								endif
+								%}
+							/>
+							<span class="tag-label">{{ taste }}</span>
+						</label>
+						{% endfor %}
+					</div>
+					<button type="submit" class="save-button">Save Changes</button>
+				</form>
+			</div>
+		</div>
+
+		<!-- Preferred Regions Section -->
+		<div class="preference-box">
+			<div class="preference-header">
+				<i class="fas fa-globe-americas"></i> Preferred Regions
+			</div>
+			<div class="preference-content">
+				<form
+					class="preference-form"
+					action="{{ url_for('main.update_regions') }}"
+					method="POST"
+				>
+					<div class="tags-wrapper">
+						{% for region in ['Champagne', 'Tuscany', 'Mosel', 'Sonoma',
+						'Oregon'] %}
+						<label class="tag">
+							<input
+								type="checkbox"
+								name="regions[]"
+								value="{{ region|lower }}"
+								{%
+								if
+								region|lower
+								in
+								preferences.regions
+								%}checked{%
+								endif
+								%}
+							/>
+							<span class="tag-label">{{ region }}</span>
+						</label>
+						{% endfor %}
+					</div>
+					<button type="submit" class="save-button">Save Changes</button>
+				</form>
+			</div>
+		</div>
+
+		<!-- Budget Preferences Section -->
+		<div class="preference-box">
+			<div class="preference-header">
+				<i class="fas fa-dollar-sign"></i> Budget Preferences
+			</div>
+			<div class="preference-content">
+				<form
+					class="preference-form"
+					action="{{ url_for('main.update_budget') }}"
+					method="POST"
+				>
+					<div class="budget-inputs">
+						<div class="price-input">
+							<label>Minimum Price</label>
+							<div class="input-with-prefix">
+								<span class="prefix">$</span>
+								<input
+									type="number"
+									name="min_price"
+									value="{{ preferences.budget.min_price|default(60.0) }}"
+									min="0"
+									step="0.01"
+								/>
+							</div>
+						</div>
+						<div class="price-input">
+							<label>Maximum Price</label>
+							<div class="input-with-prefix">
+								<span class="prefix">$</span>
+								<input
+									type="number"
+									name="max_price"
+									value="{{ preferences.budget.max_price|default(200.0) }}"
+									min="0"
+									step="0.01"
+								/>
+							</div>
+						</div>
+					</div>
+					<button type="submit" class="save-button">Save Changes</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Delete Profile Modal -->
+<div
+	class="modal fade"
+	id="deleteProfileModal"
+	tabindex="-1"
+	aria-labelledby="deleteProfileModalLabel"
+	aria-hidden="true"
+>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="deleteProfileModalLabel">Delete Profile</h5>
+				<button
+					type="button"
+					class="btn-close"
+					data-bs-dismiss="modal"
+					aria-label="Close"
+				></button>
+			</div>
+			<div class="modal-body">
+				<div class="alert alert-warning">
+					<strong>Warning:</strong> This action cannot be undone.
+				</div>
+				<form
+					id="deleteProfileForm"
+					action="{{ url_for('main.delete_profile') }}"
+					method="POST"
+				>
+					<div class="form-group">
+						<label for="confirmPassword"
+							>Please enter your password to confirm:</label
+						>
+						<input
+							type="password"
+							class="form-control"
+							id="confirmPassword"
+							name="password"
+							required
+						/>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+					Cancel
+				</button>
+				<button type="submit" form="deleteProfileForm" class="btn btn-danger">
+					Delete Profile
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %} {% block extra_css %}
+<style>
+	:root {
+		--wine-primary: #722f37;
+		--wine-light: #f9f6f7;
+		--wine-border: #e4d5d7;
+		--text-primary: #2c1810;
+		--text-secondary: #666;
+		--bg-light: #f8f9fa;
+	}
+
+	.profile-container {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 40px 20px;
+	}
+
+	.profile-header {
+		text-align: center;
+		margin-bottom: 40px;
+	}
+
+	.avatar {
+		width: 80px;
+		height: 80px;
+		background: var(--wine-primary);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto 20px;
+	}
+
+	.avatar span {
+		color: white;
+		font-size: 32px;
+		font-weight: 600;
+	}
+
+	.profile-header h1 {
+		font-size: 24px;
+		color: var(--text-primary);
+		margin-bottom: 8px;
+	}
+
+	.profile-header .subtitle {
+		color: var(--text-secondary);
+		margin-bottom: 20px;
+	}
+
+	.delete-profile {
+		color: #dc3545;
+		background: none;
+		border: 1px solid #dc3545;
+		padding: 6px 12px;
+		border-radius: 4px;
+		font-size: 14px;
+	}
+
+	.preferences-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 24px;
+	}
+
+	.preference-box {
+		background: white;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.preference-header {
+		background: var(--wine-primary);
+		color: white;
+		padding: 12px 16px;
+		font-size: 16px;
+		font-weight: 500;
+	}
+
+	.preference-header i {
+		margin-right: 8px;
+	}
+
+	.preference-content {
+		padding: 20px;
+	}
+
+	.tags-wrapper {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 16px;
+	}
+
+	.tag {
+		margin: 0;
+		position: relative;
+	}
+
+	.tag input[type="checkbox"] {
+		position: absolute;
+		opacity: 0;
+	}
+
+	.tag-label {
+		display: inline-block;
+		padding: 6px 12px;
+		border: 1px solid var(--wine-primary);
+		border-radius: 20px;
+		color: var(--wine-primary);
+		background: white;
+		cursor: pointer;
+		font-size: 14px;
+		transition: all 0.2s ease;
+	}
+
+	.tag input[type="checkbox"]:checked + .tag-label {
+		background: var(--wine-primary);
+		color: white;
+	}
+
+	.save-button {
+		background: none;
+		border: 1px solid var(--wine-primary);
+		color: var(--wine-primary);
+		padding: 6px 12px;
+		border-radius: 4px;
+		font-size: 14px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.save-button:hover {
+		background: var(--wine-primary);
+		color: white;
+	}
+
+	.budget-inputs {
+		display: grid;
+		gap: 16px;
+		margin-bottom: 16px;
+	}
+
+	.price-input label {
+		display: block;
+		margin-bottom: 8px;
+		color: var(--text-primary);
+		font-size: 14px;
+	}
+
+	.input-with-prefix {
+		display: flex;
+		align-items: center;
+		border: 1px solid var(--wine-border);
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	.prefix {
+		background: var(--wine-light);
+		color: var(--wine-primary);
+		padding: 8px 12px;
+		border-right: 1px solid var(--wine-border);
+	}
+
+	.input-with-prefix input {
+		border: none;
+		padding: 8px 12px;
+		width: 100%;
+	}
+
+	.input-with-prefix input:focus {
+		outline: none;
+	}
+
+	@media (max-width: 768px) {
+		.profile-container {
+			padding: 20px;
+		}
+
+		.preferences-grid {
+			grid-template-columns: 1fr;
+			gap: 16px;
+		}
+
+		.preference-content {
+			padding: 16px;
+		}
+
+		.tags-wrapper {
+			gap: 6px;
+		}
+
+		.tag-label {
+			padding: 4px 10px;
+			font-size: 13px;
+		}
+	}
+</style>
+{% endblock %} {% block scripts %}
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// Handle form submissions with AJAX
+		const forms = document.querySelectorAll(".preference-form");
+		forms.forEach((form) => {
+			form.addEventListener("submit", function (e) {
+				e.preventDefault();
+				const button = this.querySelector('button[type="submit"]');
+				const originalText = button.innerText;
+
+				button.innerText = "Saving...";
+				button.disabled = true;
+
+				fetch(this.action, {
+					method: "POST",
+					body: new FormData(this),
+					headers: {
+						"X-Requested-With": "XMLHttpRequest",
+					},
+				})
+					.then((response) => response.json())
+					.then((data) => {
+						if (data.success) {
+							button.innerText = "Saved!";
+							setTimeout(() => {
+								button.innerText = originalText;
+								button.disabled = false;
+							}, 2000);
+						} else {
+							throw new Error("Failed to save");
+						}
+					})
+					.catch((error) => {
+						button.innerText = "Error!";
+						setTimeout(() => {
+							button.innerText = originalText;
+							button.disabled = false;
+						}, 2000);
+					});
+			});
+		});
+
+		// Handle delete profile confirmation
+		const deleteForm = document.getElementById("deleteProfileForm");
+		if (deleteForm) {
+			deleteForm.addEventListener("submit", function (e) {
+				if (
+					!confirm(
+						"Are you absolutely sure you want to delete your profile? This action cannot be undone."
+					)
+				) {
+					e.preventDefault();
+				}
+			});
+		}
+	});
+</script>
+{% endblock %}

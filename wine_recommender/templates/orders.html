@@ -1,0 +1,235 @@
+{% extends "base.html" %} {% block title %}My Orders{% endblock %} {% block
+content %}
+<div class="container py-5 min-vh-100">
+	<h1 class="mb-4">My Orders</h1>
+
+	{% if orders %}
+	<div class="row">
+		<!-- Orders List -->
+		<div class="col-lg-8">
+			<div class="orders-list">
+				{% for order in orders %}
+				<div class="order-item">
+					<div class="row align-items-center">
+						<div class="col-12">
+							<div
+								class="d-flex justify-content-between align-items-center mb-3"
+							>
+								<div>
+									<h5 class="order-number mb-1">Order #{{ order.id }}</h5>
+									<span class="order-date">{{ order.date }}</span>
+								</div>
+								<span class="status-badge status-{{ order.status|lower }}"
+									>{{ order.status }}</span
+								>
+							</div>
+						</div>
+					</div>
+
+					{% for item in order.items %}
+					<div class="row align-items-center mb-3">
+						<div class="col-3 col-md-2">
+							<img
+								src="{{ item.image_url }}"
+								alt="{{ item.name }}"
+								class="order-item-image"
+							/>
+						</div>
+						<div class="col-6 col-md-8">
+							<h6 class="item-title">{{ item.name }}</h6>
+							<p class="item-details">
+								{{ item.type }} • Quantity: {{ item.quantity }}
+							</p>
+						</div>
+						<div class="col-3 col-md-2 text-end">
+							<span class="item-price">${{ "%.2f"|format(item.price) }}</span>
+						</div>
+					</div>
+					{% endfor %}
+
+					<div class="row mt-3 pt-3 border-top">
+						<div class="col-md-6">
+							<div class="d-flex align-items-center">
+								<span class="me-2">Total:</span>
+								<span class="fw-bold">${{ "%.2f"|format(order.total_amount) }}</span>
+							</div>
+						</div>
+						<div class="col-md-6 text-md-end mt-3 mt-md-0">
+							<button
+								class="btn btn-outline-primary btn-sm me-2"
+								onclick="trackOrder('{{ order.id }}')"
+							>
+								<i class="fas fa-truck me-1"></i> Track Order
+							</button>
+							<button
+								class="btn btn-outline-secondary btn-sm"
+								onclick="downloadInvoice('{{ order.id }}')"
+							>
+								<i class="fas fa-file-invoice me-1"></i> Invoice
+							</button>
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+
+		<!-- Order Summary -->
+		<div class="col-lg-4">
+			<div class="order-summary">
+				<h4 class="mb-4">Order Statistics</h4>
+				<div class="summary-item">
+					<span>Total Orders</span>
+					<span>{{ orders|length }}</span>
+				</div>
+				<div class="summary-item">
+					<span>Processing</span>
+					<span class="badge bg-warning text-dark"
+						>{{ orders|selectattr('status', 'equalto', 'Processing')|list|length
+						}}</span
+					>
+				</div>
+				<div class="summary-item">
+					<span>Shipped</span>
+					<span class="badge bg-info"
+						>{{ orders|selectattr('status', 'equalto', 'Shipped')|list|length
+						}}</span
+					>
+				</div>
+				<div class="summary-item">
+					<span>Delivered</span>
+					<span class="badge bg-success"
+						>{{ orders|selectattr('status', 'equalto', 'Delivered')|list|length
+						}}</span
+					>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% else %}
+	<div class="text-center py-5">
+		<i class="fas fa-shopping-bag fa-4x mb-4 text-muted"></i>
+		<h3>No Orders Yet</h3>
+		<p class="text-muted">Browse our collection and make your first order!</p>
+		<a
+			href="{{ url_for('main.recommendations') }}"
+			class="btn btn-primary mt-3"
+		>
+			View Recommendations
+		</a>
+	</div>
+	{% endif %}
+</div>
+{% endblock %} {% block extra_css %}
+<style>
+	.order-item {
+		padding: 1.5rem 0;
+		border-bottom: 1px solid #dee2e6;
+	}
+
+	.order-number {
+		color: var(--text-primary);
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin-bottom: 0.25rem;
+	}
+
+	.order-date {
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+	}
+
+	.status-badge {
+		padding: 0.5rem 1rem;
+		border-radius: 50px;
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+
+	.status-processing {
+		background-color: #fff3cd;
+		color: #856404;
+	}
+
+	.status-shipped {
+		background-color: #cce5ff;
+		color: #004085;
+	}
+
+	.status-delivered {
+		background-color: #d4edda;
+		color: #155724;
+	}
+
+	.order-item-image {
+		width: 100%;
+		object-fit: cover;
+		aspect-ratio: 1;
+	}
+
+	.item-title {
+		margin-bottom: 0.5rem;
+		color: var(--text-primary);
+	}
+
+	.item-details {
+		color: var(--text-secondary);
+		margin-bottom: 0;
+		font-size: 0.9rem;
+	}
+
+	.item-price {
+		font-weight: 600;
+		color: var(--text-primary);
+		font-size: 1.1rem;
+	}
+
+	.order-summary {
+		border: 1px solid #dee2e6;
+		padding: 1.5rem;
+	}
+
+	.summary-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 0;
+		border-bottom: 1px solid #dee2e6;
+	}
+
+	.summary-item:last-child {
+		border-bottom: none;
+	}
+
+	.btn-primary {
+		background-color: #722f37;
+		border-color: #722f37;
+	}
+
+	.btn-primary:hover {
+		background-color: #5c2630;
+		border-color: #5c2630;
+	}
+
+	.btn-outline-primary {
+		color: #722f37;
+		border-color: #722f37;
+	}
+
+	.btn-outline-primary:hover {
+		background-color: #722f37;
+		border-color: #722f37;
+		color: white;
+	}
+</style>
+{% endblock %} {% block scripts %}
+<script>
+	function trackOrder(orderId) {
+		alert("Order tracking will be implemented soon!");
+	}
+
+	function downloadInvoice(orderId) {
+		alert("Invoice download will be implemented soon!");
+	}
+</script>
+{% endblock %}

@@ -1,0 +1,713 @@
+{% extends "base.html" %} {% block title %}Wine Guide{% endblock %} {% block
+content %}
+<!-- Guide Hero Section -->
+<section class="guide-hero">
+	<div class="hero-bg"></div>
+	<div class="container position-relative">
+		<div class="row align-items-center">
+			<div class="col-lg-6">
+				<div class="hero-content">
+					<h1 class="guide-title">Wine Guide</h1>
+					<p class="guide-subtitle">Your Journey into the World of Wine</p>
+					<p class="guide-description">
+						Discover the art and science of wine appreciation through our
+						comprehensive guide. Whether you're a novice or an enthusiast, learn
+						about wine types, tasting techniques, and perfect food pairings.
+					</p>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="guide-image">
+					<img
+						src="{{ url_for('static', filename='images/wine-guide.svg') }}"
+						alt="Wine Guide"
+						class="guide-illustration floating"
+					/>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Quick Navigation -->
+<section class="guide-navigation">
+	<div class="container">
+		<div class="row g-4 justify-content-center">
+			<div class="col-md-3 col-sm-6">
+				<a href="#basics" class="nav-link">
+					<i class="fas fa-wine-glass"></i>
+					<span>Wine Basics</span>
+				</a>
+			</div>
+			<div class="col-md-3 col-sm-6">
+				<a href="#tasting" class="nav-link">
+					<i class="fas fa-clipboard-list"></i>
+					<span>Tasting Guide</span>
+				</a>
+			</div>
+			<div class="col-md-3 col-sm-6">
+				<a href="#pairing" class="nav-link">
+					<i class="fas fa-utensils"></i>
+					<span>Food Pairing</span>
+				</a>
+			</div>
+			<div class="col-md-3 col-sm-6">
+				<a href="#storage" class="nav-link">
+					<i class="fas fa-warehouse"></i>
+					<span>Storage Tips</span>
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Wine Basics Section -->
+<section id="basics" class="guide-section">
+	<div class="container">
+		<h2 class="section-title">Understanding Wine Basics</h2>
+		<div class="row g-5">
+			<div class="col-lg-6">
+				<div class="wine-types">
+					<h3 class="section-subtitle">Types of Wine</h3>
+					<div class="wine-type">
+						<h4>
+							<i class="fas fa-wine-bottle text-primary me-2"></i>Red Wine
+						</h4>
+						<p>
+							Made from dark-colored grape varieties, fermented with the grape
+							skins.
+						</p>
+					</div>
+					<div class="wine-type">
+						<h4>
+							<i class="fas fa-wine-bottle text-primary me-2"></i>White Wine
+						</h4>
+						<p>
+							Made from green or yellow grapes, typically fermented without the
+							skins.
+						</p>
+					</div>
+					<div class="wine-type">
+						<h4><i class="fas fa-wine-bottle text-primary me-2"></i>Rosé</h4>
+						<p>
+							Made from red grapes with limited skin contact during
+							fermentation.
+						</p>
+					</div>
+					<div class="wine-type">
+						<h4>
+							<i class="fas fa-wine-bottle text-primary me-2"></i>Sparkling
+						</h4>
+						<p>
+							Contains significant levels of carbon dioxide, making it fizzy.
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="characteristics">
+					<h3 class="section-subtitle">Wine Characteristics</h3>
+					<div class="characteristic">
+						<h4>Body</h4>
+						<div class="characteristic-bar">
+							<span class="bar-label">Light</span>
+							<div class="bar">
+								<div class="bar-fill" style="width: 33%"></div>
+								<div class="bar-fill" style="width: 66%"></div>
+								<div class="bar-fill" style="width: 100%"></div>
+							</div>
+							<span class="bar-label">Full</span>
+						</div>
+						<p>How the wine feels in your mouth - from light to full-bodied.</p>
+					</div>
+					<div class="characteristic">
+						<h4>Tannins</h4>
+						<div class="characteristic-bar">
+							<span class="bar-label">Soft</span>
+							<div class="bar">
+								<div class="bar-fill" style="width: 100%"></div>
+							</div>
+							<span class="bar-label">Strong</span>
+						</div>
+						<p>Creates a dry, puckering sensation - common in red wines.</p>
+					</div>
+					<div class="characteristic">
+						<h4>Acidity</h4>
+						<div class="characteristic-bar">
+							<span class="bar-label">Low</span>
+							<div class="bar">
+								<div class="bar-fill" style="width: 75%"></div>
+							</div>
+							<span class="bar-label">High</span>
+						</div>
+						<p>
+							Gives wine its crisp, tart taste - affects the wine's freshness.
+						</p>
+					</div>
+					<div class="characteristic">
+						<h4>Sweetness</h4>
+						<div class="characteristic-bar">
+							<span class="bar-label">Dry</span>
+							<div class="bar">
+								<div class="bar-fill" style="width: 50%"></div>
+							</div>
+							<span class="bar-label">Sweet</span>
+						</div>
+						<p>
+							Ranges from bone dry to very sweet - determined by residual sugar.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Tasting Guide Section -->
+<section id="tasting" class="guide-section bg-light">
+	<div class="container">
+		<h2 class="section-title">Wine Tasting Steps</h2>
+		<div class="tasting-steps">
+			<div class="tasting-step">
+				<div class="step-number">1</div>
+				<div class="step-content">
+					<h3>Look</h3>
+					<p>
+						Observe the wine's color, opacity, and viscosity. Tilt the glass and
+						look at the color from the rim to the center.
+					</p>
+					<ul class="step-tips">
+						<li>Check the clarity</li>
+						<li>Note the intensity</li>
+						<li>Observe the color variation</li>
+					</ul>
+				</div>
+			</div>
+			<div class="tasting-step">
+				<div class="step-number">2</div>
+				<div class="step-content">
+					<h3>Smell</h3>
+					<p>
+						Swirl the glass to release aromas. Take short sniffs to identify
+						primary, secondary, and tertiary aromas.
+					</p>
+					<ul class="step-tips">
+						<li>Identify fruit notes</li>
+						<li>Detect oak influence</li>
+						<li>Notice unique aromas</li>
+					</ul>
+				</div>
+			</div>
+			<div class="tasting-step">
+				<div class="step-number">3</div>
+				<div class="step-content">
+					<h3>Taste</h3>
+					<p>
+						Take a sip and let it coat your mouth. Notice the flavors, texture,
+						and finish.
+					</p>
+					<ul class="step-tips">
+						<li>Assess sweetness level</li>
+						<li>Note the acidity</li>
+						<li>Evaluate the finish</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Food Pairing Section -->
+<section id="pairing" class="guide-section">
+	<div class="container">
+		<h2 class="section-title">Food Pairing Guide</h2>
+		<div class="row g-5">
+			<div class="col-lg-3 col-sm-6">
+				<div class="pairing-group">
+					<h4><i class="fas fa-wine-glass me-2"></i>Red Wine</h4>
+					<ul class="pairing-list">
+						<li>Red meat</li>
+						<li>Hard cheese</li>
+						<li>Pasta with red sauce</li>
+						<li>Dark chocolate</li>
+					</ul>
+				</div>
+			</div>
+			<div class="col-lg-3 col-sm-6">
+				<div class="pairing-group">
+					<h4><i class="fas fa-wine-glass me-2"></i>White Wine</h4>
+					<ul class="pairing-list">
+						<li>Seafood</li>
+						<li>Poultry</li>
+						<li>Soft cheese</li>
+						<li>Light pasta dishes</li>
+					</ul>
+				</div>
+			</div>
+			<div class="col-lg-3 col-sm-6">
+				<div class="pairing-group">
+					<h4><i class="fas fa-wine-glass me-2"></i>Rosé</h4>
+					<ul class="pairing-list">
+						<li>Grilled fish</li>
+						<li>Light salads</li>
+						<li>Mediterranean dishes</li>
+						<li>Fresh fruits</li>
+					</ul>
+				</div>
+			</div>
+			<div class="col-lg-3 col-sm-6">
+				<div class="pairing-group">
+					<h4><i class="fas fa-wine-glass me-2"></i>Sparkling</h4>
+					<ul class="pairing-list">
+						<li>Oysters</li>
+						<li>Sushi</li>
+						<li>Light appetizers</li>
+						<li>Desserts</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Storage Tips Section -->
+<section id="storage" class="guide-section bg-light">
+	<div class="container">
+		<h2 class="section-title">Wine Storage Tips</h2>
+		<div class="storage-grid">
+			<div class="storage-tip">
+				<i class="fas fa-temperature-low"></i>
+				<h4>Temperature</h4>
+				<p>Store between 45-65°F (7-18°C). Avoid temperature fluctuations.</p>
+			</div>
+			<div class="storage-tip">
+				<i class="fas fa-lightbulb"></i>
+				<h4>Light</h4>
+				<p>Keep away from direct sunlight and fluorescent lights.</p>
+			</div>
+			<div class="storage-tip">
+				<i class="fas fa-wine-bottle"></i>
+				<h4>Position</h4>
+				<p>Store bottles horizontally to keep corks moist.</p>
+			</div>
+			<div class="storage-tip">
+				<i class="fas fa-humidity"></i>
+				<h4>Humidity</h4>
+				<p>Maintain 60-70% humidity to prevent cork drying.</p>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %} {% block extra_css %}
+<style>
+	:root {
+		--glass-bg: rgba(255, 255, 255, 0.1);
+		--glass-border: rgba(255, 255, 255, 0.2);
+		--glass-shadow: rgba(0, 0, 0, 0.1);
+	}
+
+	/* Hero Section */
+	.guide-hero {
+		position: relative;
+		padding: 100px 0 80px;
+		margin-bottom: 2rem;
+		overflow: hidden;
+	}
+
+	.hero-bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(
+			135deg,
+			rgba(114, 47, 55, 0.05) 0%,
+			rgba(155, 34, 66, 0.1) 100%
+		);
+		z-index: 0;
+	}
+
+	.hero-content {
+		position: relative;
+		z-index: 1;
+	}
+
+	.guide-title {
+		font-size: 3.5rem;
+		font-weight: 700;
+		color: var(--text-primary);
+		margin-bottom: 1rem;
+		line-height: 1.2;
+	}
+
+	.guide-subtitle {
+		font-size: 1.5rem;
+		color: var(--wine-primary);
+		margin-bottom: 1.5rem;
+		font-weight: 600;
+	}
+
+	.guide-description {
+		font-size: 1.1rem;
+		color: var(--text-secondary);
+		line-height: 1.7;
+		margin-bottom: 0;
+	}
+
+	.guide-illustration {
+		max-width: 100%;
+		height: auto;
+		opacity: 0.9;
+	}
+
+	.floating {
+		animation: floating 4s ease-in-out infinite;
+	}
+
+	@keyframes floating {
+		0% {
+			transform: translateY(0px);
+		}
+		50% {
+			transform: translateY(-10px);
+		}
+		100% {
+			transform: translateY(0px);
+		}
+	}
+
+	/* Glass Effect */
+	.glass-effect {
+		background: var(--glass-bg);
+		backdrop-filter: blur(10px);
+		border: 1px solid var(--glass-border);
+		border-radius: 20px;
+		box-shadow: 0 8px 32px var(--glass-shadow);
+	}
+
+	/* Navigation */
+	.guide-navigation {
+		margin-bottom: 6rem;
+	}
+
+	.nav-link {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		text-decoration: none;
+		color: var(--text-primary);
+		font-size: 1.1rem;
+		transition: all 0.3s ease;
+		padding: 0.5rem 0;
+	}
+
+	.nav-link:hover {
+		color: var(--wine-primary);
+	}
+
+	.nav-link i {
+		font-size: 1.5rem;
+		color: var(--wine-primary);
+	}
+
+	/* Section Styles */
+	.guide-section {
+		padding: 6rem 0;
+	}
+
+	.section-title {
+		text-align: center;
+		color: var(--text-primary);
+		margin-bottom: 4rem;
+		font-size: 2.5rem;
+		font-weight: 600;
+	}
+
+	.section-subtitle {
+		color: var(--wine-primary);
+		margin-bottom: 2rem;
+		font-size: 1.5rem;
+		font-weight: 600;
+	}
+
+	/* Wine Types */
+	.wine-types {
+		padding-right: 2rem;
+	}
+
+	.wine-type {
+		margin-bottom: 2rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid rgba(155, 34, 66, 0.1);
+	}
+
+	.wine-type:last-child {
+		margin-bottom: 0;
+		padding-bottom: 0;
+		border-bottom: none;
+	}
+
+	.wine-type h4 {
+		color: var(--text-primary);
+		margin-bottom: 0.5rem;
+		font-size: 1.2rem;
+		display: flex;
+		align-items: center;
+	}
+
+	.wine-type p {
+		color: var(--text-secondary);
+		margin-bottom: 0;
+	}
+
+	/* Characteristics */
+	.characteristics {
+		padding-left: 2rem;
+	}
+
+	.characteristic {
+		margin-bottom: 2rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid rgba(155, 34, 66, 0.1);
+	}
+
+	.characteristic:last-child {
+		margin-bottom: 0;
+		padding-bottom: 0;
+		border-bottom: none;
+	}
+
+	.characteristic h4 {
+		color: var(--text-primary);
+		margin-bottom: 1rem;
+		font-size: 1.2rem;
+	}
+
+	.characteristic-bar {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.bar-label {
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+		width: 50px;
+	}
+
+	.bar {
+		flex: 1;
+		height: 6px;
+		background: rgba(155, 34, 66, 0.1);
+		border-radius: 3px;
+		overflow: hidden;
+		display: flex;
+		gap: 2px;
+	}
+
+	.bar-fill {
+		height: 100%;
+		background: var(--wine-primary);
+		border-radius: 3px;
+		transition: width 0.3s ease;
+	}
+
+	/* Tasting Steps */
+	.tasting-steps {
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	.tasting-step {
+		display: flex;
+		gap: 2rem;
+		margin-bottom: 3rem;
+		padding-bottom: 3rem;
+		border-bottom: 1px solid rgba(155, 34, 66, 0.1);
+	}
+
+	.tasting-step:last-child {
+		margin-bottom: 0;
+		padding-bottom: 0;
+		border-bottom: none;
+	}
+
+	.step-number {
+		width: 40px;
+		height: 40px;
+		background: var(--wine-primary);
+		color: white;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		flex-shrink: 0;
+	}
+
+	.step-content h3 {
+		color: var(--text-primary);
+		margin-bottom: 1rem;
+		font-size: 1.3rem;
+	}
+
+	.step-tips {
+		list-style: none;
+		padding: 0;
+		margin: 1rem 0 0;
+	}
+
+	.step-tips li {
+		padding-left: 1.5rem;
+		position: relative;
+		margin-bottom: 0.5rem;
+		color: var(--text-secondary);
+	}
+
+	.step-tips li::before {
+		content: "•";
+		position: absolute;
+		left: 0;
+		color: var(--wine-primary);
+	}
+
+	/* Pairing Groups */
+	.pairing-group {
+		padding-bottom: 2rem;
+		border-bottom: 1px solid rgba(155, 34, 66, 0.1);
+	}
+
+	.pairing-group:last-child {
+		padding-bottom: 0;
+		border-bottom: none;
+	}
+
+	.pairing-group h4 {
+		color: var(--text-primary);
+		margin-bottom: 1.5rem;
+		font-size: 1.2rem;
+		display: flex;
+		align-items: center;
+	}
+
+	.pairing-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.pairing-list li {
+		padding-left: 1.5rem;
+		position: relative;
+		margin-bottom: 0.75rem;
+		color: var(--text-secondary);
+	}
+
+	.pairing-list li:last-child {
+		margin-bottom: 0;
+	}
+
+	.pairing-list li::before {
+		content: "•";
+		position: absolute;
+		left: 0;
+		color: var(--wine-primary);
+	}
+
+	/* Storage Tips */
+	.storage-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 2rem;
+		max-width: 1200px;
+		margin: 0 auto;
+	}
+
+	.storage-tip {
+		padding-bottom: 2rem;
+		border-bottom: 1px solid rgba(155, 34, 66, 0.1);
+	}
+
+	.storage-tip:last-child {
+		padding-bottom: 0;
+		border-bottom: none;
+	}
+
+	.storage-tip i {
+		font-size: 2rem;
+		color: var(--wine-primary);
+		margin-bottom: 1rem;
+	}
+
+	.storage-tip h4 {
+		color: var(--text-primary);
+		margin-bottom: 1rem;
+		font-size: 1.2rem;
+	}
+
+	.storage-tip p {
+		color: var(--text-secondary);
+		margin-bottom: 0;
+	}
+
+	/* Responsive Adjustments */
+	@media (max-width: 991.98px) {
+		.guide-hero {
+			padding: 80px 0;
+			margin-bottom: 2rem;
+		}
+
+		.guide-title {
+			font-size: 2.5rem;
+		}
+
+		.guide-image {
+			margin-top: 3rem;
+			text-align: center;
+		}
+
+		.section-title {
+			font-size: 2rem;
+		}
+
+		.wine-types {
+			padding-right: 0;
+			margin-bottom: 3rem;
+		}
+
+		.characteristics {
+			padding-left: 0;
+		}
+	}
+
+	@media (max-width: 767.98px) {
+		.guide-hero {
+			padding: 60px 0 40px;
+			margin-bottom: 2rem;
+		}
+
+		.guide-section {
+			padding: 4rem 0;
+		}
+
+		.tasting-step {
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.step-number {
+			margin-bottom: 1rem;
+		}
+
+		.pairing-group {
+			margin-bottom: 2rem;
+		}
+
+		.pairing-group:last-child {
+			margin-bottom: 0;
+		}
+	}
+</style>
+{% endblock %}

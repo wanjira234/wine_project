@@ -1,0 +1,748 @@
+{% extends 'base.html' %} {% block title %}Home{% endblock %} {% block content
+%}
+<!-- Hero Section -->
+<section class="hero-section">
+	<div class="hero-background"></div>
+	<div class="container h-100">
+		<div class="row h-100 align-items-center">
+			<div class="col-lg-6 hero-content">
+				<h1 class="hero-title">Discover Your Perfect Wine</h1>
+				<p class="hero-subtitle">
+					Let our AI sommelier guide you to wines that match your unique taste
+					preferences.
+				</p>
+				<div class="hero-buttons">
+					<a
+						href="{{ url_for('auth.signup') }}"
+						class="btn btn-primary btn-lg me-3"
+						>Get Started</a
+					>
+					<a href="#how-it-works" class="btn btn-outline-primary btn-lg"
+						>Learn More</a
+					>
+				</div>
+			</div>
+			<div class="col-lg-6 position-relative">
+				<div class="hero-image">
+					<div class="wine-glass-container">
+						<svg
+							width="100%"
+							height="100%"
+							viewBox="0 0 300 400"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								class="wine-glass-bowl"
+								d="M75 50C75 30 105 20 150 20C195 20 225 30 225 50C225 150 150 180 150 220V280H75V220C75 180 0 150 0 50H75Z"
+								fill="rgba(114, 47, 55, 0.1)"
+							/>
+							<path
+								class="wine-glass-wine"
+								d="M90 60C90 40 115 30 150 30C185 30 210 40 210 60C210 140 150 170 150 200V260H90V200C90 170 30 140 30 60H90Z"
+								fill="rgba(114, 47, 55, 0.3)"
+							/>
+							<path
+								class="wine-glass-shine"
+								d="M105 70C105 50 125 40 150 40C175 40 195 50 195 70C195 130 150 160 150 180V240H105V180C105 160 45 130 45 70H105Z"
+								fill="#722F37"
+							/>
+							<circle
+								class="wine-glass-highlight"
+								cx="150"
+								cy="80"
+								r="10"
+								fill="rgba(255, 255, 255, 0.2)"
+							/>
+							<path
+								class="wine-glass-highlight-2"
+								d="M130 100L170 100"
+								stroke="rgba(255, 255, 255, 0.1)"
+								stroke-width="2"
+							/>
+						</svg>
+					</div>
+					<div class="hero-decoration-1"></div>
+					<div class="hero-decoration-2"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Features Section -->
+<section id="how-it-works" class="section-features">
+	<div class="container">
+		<div class="text-center mb-5">
+			<h2 class="section-title">How It Works</h2>
+			<p class="section-subtitle">Experience wine discovery reimagined</p>
+		</div>
+		<div class="row g-4 justify-content-center">
+			<div class="col-md-4">
+				<div class="feature-card">
+					<div class="feature-icon">
+						<i class="fas fa-user-plus"></i>
+					</div>
+					<h3>Create Your Profile</h3>
+					<p>
+						Tell us about your preferences and let our AI understand your unique
+						taste profile.
+					</p>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="feature-card">
+					<div class="feature-icon">
+						<i class="fas fa-robot"></i>
+					</div>
+					<h3>AI Analysis</h3>
+					<p>
+						Our advanced AI analyzes thousands of wines to find your perfect
+						matches.
+					</p>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="feature-card">
+					<div class="feature-icon">
+						<i class="fas fa-wine-glass-alt"></i>
+					</div>
+					<h3>Discover Wines</h3>
+					<p>Get personalized recommendations and expand your wine journey.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Featured Wines -->
+<section class="section-wines">
+	<div class="container">
+		<div
+			class="section-header d-flex justify-content-between align-items-center mb-5"
+		>
+			<div>
+				<h2 class="section-title">Featured Wines</h2>
+				<p class="section-subtitle">Curated selection of exceptional wines</p>
+			</div>
+			<a href="{{ url_for('main.catalog') }}" class="btn btn-link text-primary">
+				View All <i class="fas fa-arrow-right ms-2"></i>
+			</a>
+		</div>
+		<div class="row g-4">
+			{% for wine in featured_wines %}
+			<div class="col-lg-3 col-md-6">
+				<div class="wine-card">
+					<div class="wine-card-image">
+						<img
+							src="{{ wine.image_url or url_for('static', filename='images/wine-placeholder.svg') }}"
+							alt="{{ wine.name }}"
+						/>
+						<div class="wine-card-badges">
+							{% if wine.is_new %}
+							<span class="badge bg-primary">New</span>
+							{% endif %} {% if wine.is_featured %}
+							<span class="badge bg-success">Featured</span>
+							{% endif %}
+						</div>
+					</div>
+					<div class="wine-card-content">
+						<h4>{{ wine.name }}</h4>
+						<p class="wine-details">
+							{{ wine.varietal.name if wine.varietal else 'Various' }} • {{
+							wine.region.name if wine.region else 'Unknown Region' }}
+						</p>
+						<div class="wine-rating">
+							<div class="stars">
+								{% set rating = wine.calculate_average_rating() %} {% for i in
+								range(5) %} {% if i < rating|int %}
+								<i class="fas fa-star"></i>
+								{% elif i < rating %}
+								<i class="fas fa-star-half-alt"></i>
+								{% else %}
+								<i class="far fa-star"></i>
+								{% endif %} {% endfor %}
+								<span class="rating-count">({{ wine.reviews|length }})</span>
+							</div>
+						</div>
+						<div class="wine-footer">
+							<span class="wine-price"
+								>${{ "%.2f"|format(wine.price or 0) }}</span
+							>
+							<a
+								href="{{ url_for('main.wine_detail', wine_id=wine.id) }}"
+								class="btn btn-sm btn-outline-primary"
+								>View Details</a
+							>
+						</div>
+					</div>
+				</div>
+			</div>
+			{% endfor %} {% if not featured_wines %}
+			<div class="col-12">
+				<div class="text-center py-5">
+					<p class="text-muted">No featured wines available at the moment.</p>
+				</div>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+</section>
+
+<!-- Use Cases -->
+<section class="section-use-cases">
+	<div class="container">
+		<div class="text-center mb-5">
+			<h2 class="section-title">Perfect for Every Wine Enthusiast</h2>
+			<p class="section-subtitle">
+				Discover how our AI enhances your wine experience
+			</p>
+		</div>
+		<div class="row g-4">
+			<div class="col-lg-4">
+				<div class="use-case-card">
+					<div class="use-case-icon">
+						<i class="fas fa-wine-glass"></i>
+					</div>
+					<h3>Personal Sommelier</h3>
+					<p>
+						Get expert recommendations tailored to your taste preferences and
+						occasion.
+					</p>
+				</div>
+			</div>
+			<div class="col-lg-4">
+				<div class="use-case-card">
+					<div class="use-case-icon">
+						<i class="fas fa-chart-line"></i>
+					</div>
+					<h3>Taste Analysis</h3>
+					<p>
+						Understand your palate through detailed AI-powered taste analysis.
+					</p>
+				</div>
+			</div>
+			<div class="col-lg-4">
+				<div class="use-case-card">
+					<div class="use-case-icon">
+						<i class="fas fa-utensils"></i>
+					</div>
+					<h3>Food Pairing</h3>
+					<p>Discover perfect wine and food combinations for any meal.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+	<div class="container">
+		<div class="cta-wrapper">
+			<div class="row align-items-center">
+				<div class="col-lg-8">
+					<div class="cta-content">
+						<h3 class="cta-title">Ready to Start Your Wine Journey?</h3>
+						<p class="cta-description">
+							Join thousands of wine enthusiasts who have discovered their
+							perfect match.
+						</p>
+						<div class="cta-buttons">
+							<a href="{{ url_for('auth.signup') }}" class="btn btn-primary"
+								>Get Started Now</a
+							>
+							<a
+								href="{{ url_for('main.about') }}"
+								class="btn btn-outline-primary"
+								>Learn More</a
+							>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-4">
+					<div class="cta-image">
+						<img
+							src="{{ url_for('static', filename='images/logo.svg') }}"
+							alt="Wine Expert"
+							class="cta-logo"
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %} {% block extra_css %}
+<style>
+	:root {
+		--primary: #722f37;
+		--primary-hover: #8b0000;
+		--primary-light: #9b2242;
+		--secondary: #4a4a4a;
+		--text-primary: #2d1b1e;
+		--text-secondary: #666666;
+		--bg-white: #ffffff;
+		--bg-light: #f9f6f7;
+		--border-light: #e8e0e1;
+		--shadow-sm: 0 1px 2px 0 rgb(114 47 55 / 0.05);
+		--shadow-md: 0 4px 6px -1px rgb(114 47 55 / 0.1);
+		--navbar-height: 72px;
+		--navbar-bg: #ffffff;
+		--navbar-shadow: 0 2px 4px rgba(114, 47, 55, 0.05);
+		--card-shadow: 0 8px 24px rgba(114, 47, 55, 0.08);
+		--transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		--wine-primary: #722f37;
+		--wine-secondary: #8b0000;
+		--wine-light: #f8f4f4;
+		--wine-success: #4a6741;
+		--wine-success-light: #e8f0e7;
+	}
+
+	/* Hero Section */
+	.hero-section {
+		position: relative;
+		min-height: 100vh;
+		background-color: var(--bg-white);
+		color: var(--text-primary);
+		overflow: hidden;
+		padding: 100px 0;
+	}
+
+	.hero-background {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 100%;
+		background: linear-gradient(
+			135deg,
+			rgba(114, 47, 55, 0.08) 0%,
+			rgba(155, 34, 66, 0.15) 100%
+		);
+		z-index: 0;
+	}
+
+	.hero-content {
+		position: relative;
+		z-index: 2;
+	}
+
+	.hero-title {
+		font-size: 4rem;
+		font-weight: 700;
+		margin-bottom: 1.5rem;
+		line-height: 1.2;
+		color: var(--text-primary);
+	}
+
+	.hero-subtitle {
+		font-size: 1.25rem;
+		margin-bottom: 2rem;
+		color: var(--text-primary);
+	}
+
+	.hero-image {
+		position: relative;
+		height: 600px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.wine-glass-container {
+		width: 300px;
+		height: 400px;
+		position: relative;
+		animation: float 6s ease-in-out infinite;
+	}
+
+	.hero-decoration-1,
+	.hero-decoration-2 {
+		position: absolute;
+		width: 300px;
+		height: 300px;
+		border-radius: 50%;
+		background: rgba(114, 47, 55, 0.15);
+	}
+
+	.hero-decoration-1 {
+		top: 10%;
+		right: 10%;
+		animation: pulse 4s ease-in-out infinite;
+	}
+
+	.hero-decoration-2 {
+		bottom: 10%;
+		left: 10%;
+		animation: pulse 4s ease-in-out infinite 2s;
+	}
+
+	/* Features Section */
+	.section-features {
+		padding: 100px 0;
+		background-color: var(--bg-white);
+	}
+
+	.feature-card {
+		text-align: center;
+		padding: 2rem;
+		border-radius: 20px;
+		background: var(--bg-white);
+		box-shadow: var(--card-shadow);
+		transition: var(--transition);
+	}
+
+	.feature-card:hover {
+		transform: translateY(-10px);
+	}
+
+	.feature-icon {
+		width: 80px;
+		height: 80px;
+		margin: 0 auto 1.5rem;
+		background: rgba(114, 47, 55, 0.15);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 2rem;
+		color: var(--wine-primary);
+	}
+
+	/* Wine Cards */
+	.section-wines {
+		padding: 100px 0;
+		background-color: var(--bg-light);
+	}
+
+	.wine-card {
+		background: var(--bg-white);
+		border-radius: 20px;
+		overflow: hidden;
+		box-shadow: var(--card-shadow);
+		transition: var(--transition);
+	}
+
+	.wine-card:hover {
+		transform: translateY(-10px);
+	}
+
+	.wine-card-image {
+		position: relative;
+		padding-top: 133%;
+		background: var(--wine-light);
+	}
+
+	.wine-card-image img {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.wine-card-badges {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.wine-card-content {
+		padding: 1.5rem;
+	}
+
+	.wine-details {
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+	}
+
+	.wine-rating {
+		margin-bottom: 1rem;
+	}
+
+	.stars {
+		color: var(--wine-primary);
+	}
+
+	.rating-count {
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+		margin-left: 0.5rem;
+	}
+
+	.wine-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.wine-price {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: var(--wine-primary);
+	}
+
+	/* Use Cases */
+	.section-use-cases {
+		padding: 100px 0;
+		background-color: var(--bg-white);
+	}
+
+	.use-case-card {
+		text-align: center;
+		padding: 2rem;
+		border-radius: 20px;
+		background: var(--bg-white);
+		box-shadow: var(--card-shadow);
+		transition: var(--transition);
+	}
+
+	.use-case-card:hover {
+		transform: translateY(-10px);
+	}
+
+	.use-case-icon {
+		width: 80px;
+		height: 80px;
+		margin: 0 auto 1.5rem;
+		background: var(--wine-light);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 2rem;
+		color: var(--wine-primary);
+	}
+
+	/* CTA Section */
+	.cta-section {
+		padding: 80px 0;
+		background: #fff;
+	}
+
+	.cta-wrapper {
+		background: #fff;
+		border-radius: 16px;
+		padding: 48px;
+		box-shadow: 0 10px 30px rgba(114, 47, 55, 0.06);
+		border: 1px solid rgba(114, 47, 55, 0.1);
+	}
+
+	.cta-content {
+		max-width: 600px;
+	}
+
+	.cta-title {
+		font-size: 32px;
+		font-weight: 600;
+		color: var(--text-primary);
+		margin-bottom: 16px;
+	}
+
+	.cta-description {
+		font-size: 16px;
+		color: var(--text-secondary);
+		margin-bottom: 32px;
+		line-height: 1.5;
+	}
+
+	.cta-buttons {
+		display: flex;
+		gap: 16px;
+	}
+
+	.cta-buttons .btn {
+		padding: 12px 24px;
+		font-weight: 500;
+		border-radius: 8px;
+	}
+
+	.cta-image {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.cta-logo {
+		width: 180px;
+		height: 180px;
+		opacity: 0.8;
+	}
+
+	@media (max-width: 991.98px) {
+		.cta-section {
+			padding: 60px 0;
+		}
+
+		.cta-wrapper {
+			padding: 32px;
+		}
+
+		.cta-image {
+			margin-top: 32px;
+		}
+
+		.cta-logo {
+			width: 140px;
+			height: 140px;
+		}
+	}
+
+	@media (max-width: 767.98px) {
+		.cta-title {
+			font-size: 28px;
+		}
+
+		.cta-buttons {
+			flex-direction: column;
+		}
+
+		.cta-buttons .btn {
+			width: 100%;
+		}
+	}
+
+	/* Section Titles */
+	.section-title {
+		color: var(--wine-primary);
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin-bottom: 1rem;
+	}
+
+	.section-subtitle {
+		color: var(--text-secondary);
+		font-size: 1.1rem;
+	}
+
+	/* Animations */
+	@keyframes float {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-20px);
+		}
+	}
+
+	@keyframes pulse {
+		0%,
+		100% {
+			transform: scale(1);
+			opacity: 0.1;
+		}
+		50% {
+			transform: scale(1.1);
+			opacity: 0.2;
+		}
+	}
+
+	/* Responsive Adjustments */
+	@media (max-width: 991.98px) {
+		.hero-title {
+			font-size: 3rem;
+		}
+
+		.hero-image {
+			height: 400px;
+			margin-top: 2rem;
+		}
+
+		.wine-glass-container {
+			width: 200px;
+			height: 300px;
+		}
+	}
+
+	@media (max-width: 767.98px) {
+		.hero-title {
+			font-size: 2.5rem;
+		}
+
+		.section-features,
+		.section-wines,
+		.section-use-cases,
+		.cta-section {
+			padding: 60px 0;
+		}
+	}
+
+	/* Custom Button Styles */
+	.btn-primary {
+		background-color: var(--wine-primary);
+		border-color: var(--wine-primary);
+		color: var(--bg-white);
+	}
+
+	.btn-primary:hover {
+		background-color: var(--wine-secondary);
+		border-color: var(--wine-secondary);
+	}
+
+	.btn-outline-primary {
+		color: var(--wine-primary);
+		border-color: var(--wine-primary);
+	}
+
+	.btn-outline-primary:hover {
+		background-color: var(--wine-primary);
+		border-color: var(--wine-primary);
+		color: var(--bg-white);
+	}
+
+	.btn-link {
+		color: var(--wine-primary);
+		text-decoration: none;
+	}
+
+	.btn-link:hover {
+		color: var(--wine-secondary);
+		text-decoration: none;
+	}
+
+	.badge.bg-primary {
+		background-color: var(--wine-primary) !important;
+	}
+
+	.badge.bg-success {
+		background-color: var(--wine-success) !important;
+	}
+</style>
+{% endblock %} {% block scripts %}
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// Smooth scroll for anchor links
+		document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+			anchor.addEventListener("click", function (e) {
+				e.preventDefault();
+				document.querySelector(this.getAttribute("href")).scrollIntoView({
+					behavior: "smooth",
+				});
+			});
+		});
+
+		// Animation on scroll
+		const animateOnScroll = function () {
+			const cards = document.querySelectorAll(
+				".feature-card, .wine-card, .use-case-card"
+			);
+			cards.forEach((card) => {
+				const cardTop = card.getBoundingClientRect().top;
+				const windowHeight = window.innerHeight;
+				if (cardTop < windowHeight * 0.8) {
+					card.style.opacity = "1";
+					card.style.transform = "translateY(0)";
+				}
+			});
+		};
+
+		window.addEventListener("scroll", animateOnScroll);
+		animateOnScroll();
+	});
+</script>
+{% endblock %}

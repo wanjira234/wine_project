@@ -1,0 +1,70 @@
+{% extends "base.html" %} {% block title %}Wine Catalog{% endblock %} {% block
+content %}
+<div class="container">
+	<div class="row">
+		<div class="col-md-3">
+			<!-- Filters -->
+			<div class="card mb-4">
+				<div class="card-body">
+					<h5 class="card-title">Filters</h5>
+					<form>
+						<div class="mb-3">
+							<label class="form-label">Wine Type</label>
+							<select class="form-select">
+								<option value="">All Types</option>
+								<option value="red">Red</option>
+								<option value="white">White</option>
+								<option value="rose">Rosé</option>
+								<option value="sparkling">Sparkling</option>
+							</select>
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Price Range</label>
+							<select class="form-select">
+								<option value="">All Prices</option>
+								<option value="budget">Under $15</option>
+								<option value="moderate">$15-30</option>
+								<option value="premium">$30-50</option>
+								<option value="luxury">$50+</option>
+							</select>
+						</div>
+						<button type="submit" class="btn btn-primary">Apply Filters</button>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-9">
+			<!-- Wine List -->
+			<h1 class="mb-4">Wine Catalog</h1>
+			<div class="row">
+				<div class="col-12 mb-3">
+					<div class="d-flex justify-content-between align-items-center">
+						<div>
+							<span class="text-muted">Showing 1-12 of 100 wines</span>
+						</div>
+						<div>
+							<select class="form-select">
+								<option value="rating">Sort by Rating</option>
+								<option value="price-low">Price: Low to High</option>
+								<option value="price-high">Price: High to Low</option>
+								<option value="name">Name: A to Z</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row g-4">
+				<!-- Wine cards will be dynamically populated here -->
+				<div class="col-md-4">
+					<div class="card h-100">
+						<div class="card-body">
+							<h5 class="card-title">Sample Wine</h5>
+							<p class="card-text">Coming soon...</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

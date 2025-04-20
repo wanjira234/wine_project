@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="csrf-token" content="{{ csrf_token() }}" />
+		<title>{% block title %}{% endblock %} | Wine Recommender</title>
+
+		<!-- Favicon and Icons -->
+		<link
+			rel="icon"
+			type="image/svg+xml"
+			href="{{ url_for('static', filename='images/favicon.svg') }}"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="32x32"
+			href="{{ url_for('static', filename='images/favicon-32x32.png') }}"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="16x16"
+			href="{{ url_for('static', filename='images/favicon-16x16.png') }}"
+		/>
+		<link
+			rel="apple-touch-icon"
+			sizes="180x180"
+			href="{{ url_for('static', filename='images/apple-touch-icon.png') }}"
+		/>
+		<link
+			rel="manifest"
+			href="{{ url_for('static', filename='site.webmanifest') }}"
+		/>
+
+		<!-- Google Fonts -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- Bootstrap 5 CSS -->
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+		/>
+		<!-- Font Awesome -->
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+		/>
+		<!-- SweetAlert2 CSS -->
+		<link
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+		/>
+		<!-- Custom CSS -->
+		<link
+			rel="stylesheet"
+			href="{{ url_for('static', filename='css/style.css') }}"
+		/>
+		{% block extra_css %}{% endblock %}
+		<!-- Bootstrap JS Bundle with Popper -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+		{% block head %}{% endblock %}
+	</head>
+	<body class="{{ body_class }}">
+		<!-- Navigation -->
+		<nav class="navbar navbar-expand-lg">
+			<div class="container">
+				<a class="navbar-brand" href="{{ url_for('main.index') }}">
+					<img
+						src="{{ url_for('static', filename='images/logo.svg') }}"
+						alt="Wine Expert"
+						height="48"
+					/>
+					<span>Wine Expert</span>
+				</a>
+				<button
+					class="navbar-toggler"
+					type="button"
+					data-bs-toggle="collapse"
+					data-bs-target="#navbarNav"
+					aria-controls="navbarNav"
+					aria-expanded="false"
+					aria-label="Toggle navigation"
+				>
+					<i class="fas fa-bars"></i>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav ms-auto align-items-center">
+						<li class="nav-item">
+							<a
+								class="nav-link {{ 'active' if request.endpoint == 'main.index' }}"
+								href="{{ url_for('main.index') }}"
+								>Home</a
+							>
+						</li>
+						<li class="nav-item">
+							<a
+								class="nav-link {{ 'active' if request.endpoint == 'main.about' }}"
+								href="{{ url_for('main.about') }}"
+								>About</a
+							>
+						</li>
+						<li class="nav-item">
+							<a
+								class="nav-link {{ 'active' if request.endpoint == 'main.guide' }}"
+								href="{{ url_for('main.guide') }}"
+								>Guide</a
+							>
+						</li>
+						{% if current_user.is_authenticated %}
+						<li class="nav-item">
+							<a
+								class="nav-link {{ 'active' if request.endpoint == 'main.recommendations' }}"
+								href="{{ url_for('main.recommendations') }}"
+								>Recommendations</a
+							>
+						</li>
+						<li class="nav-item dropdown">
+							<a
+								class="nav-link dropdown-toggle d-flex align-items-center"
+								href="#"
+								id="userDropdown"
+								role="button"
+								data-bs-toggle="dropdown"
+								aria-expanded="false"
+							>
+								<div class="user-avatar">
+									{{ current_user.username[0].upper() }}
+								</div>
+								<div class="user-info d-none d-lg-flex flex-column">
+									<span class="username">{{ current_user.username }}</span>
+									<small class="user-role text-muted"
+										>{{ current_user.role.value|title }}</small
+									>
+								</div>
+							</a>
+							<ul
+								class="dropdown-menu dropdown-menu-end"
+								aria-labelledby="userDropdown"
+							>
+								<li>
+									<a class="dropdown-item" href="{{ url_for('main.profile') }}"
+										><i class="fas fa-user me-2"></i>Profile</a
+									>
+								</li>
+								{% if current_user.is_admin %}
+								<li>
+									<a
+										class="dropdown-item"
+										href="{{ url_for('admin.dashboard') }}"
+									>
+										<i class="fas fa-shield-alt me-2"></i>Admin Panel
+									</a>
+								</li>
+								{% endif %}
+								<li>
+									<a class="dropdown-item" href="{{ url_for('main.cart') }}">
+										<i class="fas fa-shopping-cart me-2"></i>Cart
+										<span id="cartCount" class="badge bg-wine rounded-pill ms-2"
+											>{{ session.get('cart', [])|length }}</span
+										>
+									</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="{{ url_for('main.orders') }}"
+										><i class="fas fa-box me-2"></i>Orders</a
+									>
+								</li>
+								<li><hr class="dropdown-divider" /></li>
+								<li>
+									<a class="dropdown-item" href="{{ url_for('auth.logout') }}"
+										><i class="fas fa-sign-out-alt me-2"></i>Logout</a
+									>
+								</li>
+							</ul>
+						</li>
+						{% else %}
+						<li class="nav-item">
+							<div class="auth-buttons">
+								<a
+									href="{{ url_for('auth.login') }}"
+									class="btn btn-outline-primary"
+									>Sign In</a
+								>
+								<a href="{{ url_for('auth.signup') }}" class="btn btn-primary"
+									>Sign Up</a
+								>
+							</div>
+						</li>
+						{% endif %}
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<!-- Main Content -->
+		<main class="content-wrapper">
+			{% if not request.endpoint.startswith('auth.') %} {% with messages =
+			get_flashed_messages(with_categories=true) %} {% if messages %} {% for
+			category, message in messages %}
+			<div
+				class="alert alert-{{ category }} alert-dismissible fade show"
+				role="alert"
+			>
+				{{ message }}
+				<button
+					type="button"
+					class="btn-close"
+					data-bs-dismiss="alert"
+					aria-label="Close"
+				></button>
+			</div>
+			{% endfor %} {% endif %} {% endwith %} {% endif %} {% block content %}{%
+			endblock %}
+		</main>
+
+		<!-- Footer -->
+		<footer class="footer">
+			<div class="container">
+				<div class="footer-content">
+					<!-- Brand Column -->
+					<div class="row g-4 g-lg-5">
+						<div class="col-lg-4 col-md-6">
+							<div class="footer-brand">
+								<div class="d-flex align-items-center gap-3 mb-4">
+									<img
+										src="{{ url_for('static', filename='images/logo.svg') }}"
+										alt="Wine Expert Logo"
+										height="48"
+										class="footer-logo"
+									/>
+									<div class="brand-text">Wine Expert</div>
+								</div>
+								<p class="footer-description">
+									Your personal AI sommelier helping you discover the perfect
+									wine for every occasion.
+								</p>
+								<div class="social-icons">
+									<a href="#" class="social-icon" aria-label="Facebook"
+										><i class="fab fa-facebook-f"></i
+									></a>
+									<a href="#" class="social-icon" aria-label="Twitter"
+										><i class="fab fa-twitter"></i
+									></a>
+									<a href="#" class="social-icon" aria-label="Instagram"
+										><i class="fab fa-instagram"></i
+									></a>
+									<a href="#" class="social-icon" aria-label="LinkedIn"
+										><i class="fab fa-linkedin-in"></i
+									></a>
+								</div>
+							</div>
+						</div>
+
+						<!-- Quick Links -->
+						<div class="col-lg-2 col-md-6">
+							<h5 class="footer-title">Quick Links</h5>
+							<ul class="footer-links">
+								<li><a href="{{ url_for('main.about') }}">About Us</a></li>
+								<li>
+									<a href="{{ url_for('main.catalog') }}">Wine Catalog</a>
+								</li>
+								<li>
+									<a href="{{ url_for('main.predict') }}">How It Works</a>
+								</li>
+								<li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+							</ul>
+						</div>
+
+						<!-- Features -->
+						<div class="col-lg-2 col-md-6">
+							<h5 class="footer-title">Features</h5>
+							<ul class="footer-links">
+								<li><a href="#">Wine Recommendations</a></li>
+								<li><a href="#">Taste Profile</a></li>
+								<li><a href="#">Food Pairing</a></li>
+								<li><a href="#">Wine Education</a></li>
+							</ul>
+						</div>
+
+						<!-- Newsletter -->
+						<div class="col-lg-4 col-md-6">
+							<h5 class="footer-title">Newsletter</h5>
+							<p class="footer-description mb-3">
+								Subscribe to our newsletter for wine tips and exclusive offers.
+							</p>
+							<form class="footer-newsletter">
+								<div class="input-group">
+									<input
+										type="email"
+										class="form-control"
+										placeholder="Enter your email"
+										aria-label="Enter your email"
+									/>
+									<button class="btn btn-primary" type="submit">
+										Subscribe
+									</button>
+								</div>
+							</form>
+						</div>
+					</div>
+
+					<div class="footer-divider"></div>
+
+					<!-- Footer Bottom -->
+					<div
+						class="d-flex flex-wrap justify-content-between align-items-center py-4"
+					>
+						<div class="copyright">
+							© {{ current_year }} Wine Expert. All rights reserved.
+						</div>
+						<ul class="footer-legal">
+							<li><a href="#">Privacy Policy</a></li>
+							<li><a href="#">Terms of Service</a></li>
+							<li><a href="#">Cookie Policy</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</footer>
+
+		<!-- Core Scripts -->
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+		<!-- Custom Scripts -->
+		<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+		<!-- Global Scripts -->
+		<script>
+			// Global AJAX setup for CSRF token
+			$(document).ready(function () {
+				$.ajaxSetup({
+					beforeSend: function (xhr, settings) {
+						if (
+							!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) &&
+							!this.crossDomain
+						) {
+							xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}");
+						}
+					},
+				});
+			});
+		</script>
+
+		<!-- Page-specific scripts -->
+		{% block page_scripts %}{% endblock %}
+
+		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+				console.log("DOM Content Loaded");
+
+				// Check if Bootstrap is available
+				console.log(
+					"Bootstrap version:",
+					typeof bootstrap !== "undefined" ? bootstrap.version : "Not loaded"
+				);
+
+				// Find dropdown elements
+				var dropdownElementList = [].slice.call(
+					document.querySelectorAll('[data-bs-toggle="dropdown"]')
+				);
+				console.log("Found dropdown elements:", dropdownElementList);
+
+				// Initialize dropdowns and store them
+				var dropdowns = {};
+
+				try {
+					dropdownElementList.forEach(function (dropdownToggleEl) {
+						console.log("Initializing dropdown for:", dropdownToggleEl);
+						// Create dropdown instance
+						dropdowns[dropdownToggleEl.id] = new bootstrap.Dropdown(
+							dropdownToggleEl
+						);
+
+						// Add click handler
+						dropdownToggleEl.addEventListener("click", function (e) {
+							e.preventDefault();
+							e.stopPropagation();
+							console.log("Dropdown clicked:", this);
+							console.log("Dropdown target:", this.nextElementSibling);
+
+							// Manually toggle dropdown
+							dropdowns[this.id].toggle();
+						});
+					});
+					console.log("Dropdowns initialized:", dropdowns);
+				} catch (error) {
+					console.error("Error initializing dropdowns:", error);
+				}
+
+				// Close dropdowns when clicking outside
+				document.addEventListener("click", function (e) {
+					if (!e.target.matches('[data-bs-toggle="dropdown"]')) {
+						Object.values(dropdowns).forEach((dropdown) => {
+							dropdown.hide();
+						});
+					}
+				});
+			});
+		</script>
+
+		<style>
+			/* Add these styles at the top of your existing styles */
+			html,
+			body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				display: flex;
+				flex-direction: column;
+				padding-top: 76px;
+			}
+
+			.content-wrapper {
+				flex: 1 0 auto;
+				width: 100%;
+				min-height: calc(100vh - 76px);
+				display: flex;
+				flex-direction: column;
+			}
+
+			.footer {
+				flex-shrink: 0;
+				margin-top: auto;
+			}
+
+			/* Update navbar styles */
+			.navbar {
+				position: fixed;
+				top: 0;
+				right: 0;
+				left: 0;
+				z-index: 1040;
+				height: 76px;
+				background: white;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			}
+
+			/* Add this class for admin pages */
+			.admin-page .content-wrapper {
+				padding: 0;
+				margin: 0;
+			}
+
+			.admin-page .footer {
+				display: none;
+			}
+
+			/* Footer Styles */
+			.footer {
+				background: linear-gradient(135deg, #8b0000 0%, #722f37 100%);
+				color: rgba(255, 255, 255, 0.9);
+				font-size: 0.95rem;
+				position: relative;
+				padding: 80px 0 0;
+			}
+
+			.footer-content {
+				position: relative;
+			}
+
+			.footer-brand {
+				margin-bottom: 1rem;
+			}
+
+			.footer-logo {
+				filter: brightness(0) invert(1);
+			}
+
+			.brand-text {
+				font-size: 1.75rem;
+				font-weight: 700;
+				color: #fff;
+				letter-spacing: -0.5px;
+			}
+
+			.footer-description {
+				color: rgba(255, 255, 255, 0.8);
+				line-height: 1.7;
+				margin-bottom: 1.5rem;
+				font-size: 1rem;
+			}
+
+			.footer-title {
+				color: #fff;
+				font-size: 1.2rem;
+				font-weight: 600;
+				margin-bottom: 1.75rem;
+				position: relative;
+				padding-bottom: 0.75rem;
+			}
+
+			.footer-title::after {
+				content: "";
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				width: 40px;
+				height: 2px;
+				background-color: rgba(255, 255, 255, 0.3);
+				transition: width 0.3s ease;
+			}
+
+			.footer-title:hover::after {
+				width: 60px;
+			}
+
+			.footer-links {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+			}
+
+			.footer-links li {
+				margin-bottom: 1rem;
+			}
+
+			.footer-links a {
+				color: rgba(255, 255, 255, 0.8);
+				text-decoration: none;
+				transition: all 0.3s ease;
+				display: inline-block;
+				position: relative;
+				padding-left: 0;
+			}
+
+			.footer-links a:hover {
+				color: #fff;
+				transform: translateX(10px);
+			}
+
+			.social-icons {
+				display: flex;
+				gap: 1rem;
+				margin-top: 2rem;
+			}
+
+			.social-icon {
+				width: 42px;
+				height: 42px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: rgba(255, 255, 255, 0.1);
+				color: #fff;
+				border-radius: 50%;
+				transition: all 0.3s ease;
+				font-size: 1.1rem;
+			}
+
+			.social-icon:hover {
+				background-color: #fff;
+				color: #722f37;
+				transform: translateY(-3px);
+			}
+
+			.footer-newsletter .form-control {
+				background-color: rgba(255, 255, 255, 0.1);
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				color: #fff;
+				padding: 0.875rem 1.25rem;
+				font-size: 0.95rem;
+				border-radius: 8px 0 0 8px;
+			}
+
+			.footer-newsletter .form-control::placeholder {
+				color: rgba(255, 255, 255, 0.6);
+			}
+
+			.footer-newsletter .form-control:focus {
+				background-color: rgba(255, 255, 255, 0.15);
+				border-color: rgba(255, 255, 255, 0.3);
+				box-shadow: none;
+			}
+
+			.footer-newsletter .btn {
+				padding: 0.875rem 1.75rem;
+				background-color: #fff;
+				border-color: #fff;
+				color: #722f37;
+				font-weight: 600;
+				border-radius: 0 8px 8px 0;
+				transition: all 0.3s ease;
+			}
+
+			.footer-newsletter .btn:hover {
+				background-color: rgba(255, 255, 255, 0.9);
+				border-color: rgba(255, 255, 255, 0.9);
+				color: #8b0000;
+			}
+
+			.footer-divider {
+				height: 1px;
+				background-color: rgba(255, 255, 255, 0.1);
+				margin: 3rem 0 0;
+			}
+
+			.copyright {
+				color: rgba(255, 255, 255, 0.8);
+			}
+
+			.footer-legal {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+				display: flex;
+				gap: 2.5rem;
+			}
+
+			.footer-legal a {
+				color: rgba(255, 255, 255, 0.8);
+				text-decoration: none;
+				transition: all 0.3s ease;
+			}
+
+			.footer-legal a:hover {
+				color: #fff;
+			}
+
+			@media (max-width: 767.98px) {
+				.footer {
+					padding: 60px 0 0;
+				}
+
+				.footer-title {
+					margin-top: 2rem;
+				}
+
+				.footer-legal {
+					gap: 1.5rem;
+					flex-wrap: wrap;
+					justify-content: center;
+					margin-top: 1rem;
+				}
+
+				.copyright {
+					width: 100%;
+					text-align: center;
+					margin-bottom: 1rem;
+				}
+
+				.social-icons {
+					justify-content: center;
+				}
+			}
+
+			/* Update navbar styles */
+			.cart-count {
+				position: absolute;
+				top: -5px;
+				right: 5px;
+				background-color: var(--wine-primary);
+				color: white;
+				border-radius: 50%;
+				width: 20px;
+				height: 20px;
+				font-size: 0.75rem;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-weight: 600;
+			}
+
+			.nav-item .fa-shopping-cart {
+				position: relative;
+				font-size: 1.2rem;
+			}
+
+			:root {
+				--wine-primary: #722f37;
+				--wine-secondary: #8b4513;
+				--wine-accent: #c41e3a;
+				--wine-light: #f5e6e8;
+				--wine-dark: #4a1f23;
+				--text-primary: #2c1810;
+				--text-secondary: #6b4423;
+				--bg-light: #f8f9fa;
+				--shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+				--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+			}
+
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+					"Helvetica Neue", Arial, sans-serif;
+				color: var(--text-primary);
+				padding-top: 76px;
+			}
+
+			.navbar {
+				background-color: white;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+				padding: 1rem 0;
+				position: fixed;
+				top: 0;
+				right: 0;
+				left: 0;
+				z-index: 1030;
+				transition: all 0.3s ease;
+			}
+
+			.navbar.scrolled {
+				padding: 0.75rem 0;
+				background: rgba(255, 255, 255, 0.98);
+				box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+			}
+
+			.navbar-brand {
+				display: flex;
+				align-items: center;
+				gap: 0.75rem;
+				font-weight: 600;
+				color: var(--wine-primary) !important;
+				transition: color 0.3s ease;
+			}
+
+			.navbar-brand:hover {
+				color: var(--wine-primary);
+			}
+
+			.navbar-brand img {
+				width: 32px;
+				height: 32px;
+			}
+
+			.navbar-nav {
+				gap: 0.5rem;
+			}
+
+			.nav-link {
+				color: var(--text-primary) !important;
+				font-weight: 500;
+				padding: 0.5rem 1rem;
+				border-radius: 8px;
+				transition: all 0.3s ease;
+			}
+
+			.nav-link:hover,
+			.nav-link.active {
+				color: var(--wine-primary) !important;
+				background-color: var(--wine-light);
+			}
+
+			.navbar-toggler {
+				border: none;
+				padding: 0.5rem;
+			}
+
+			.navbar-toggler:focus {
+				box-shadow: none;
+			}
+
+			.cart-link {
+				position: relative;
+				padding-right: 1.5rem;
+			}
+
+			.auth-buttons {
+				display: flex;
+				gap: 0.75rem;
+				align-items: center;
+			}
+
+			.auth-buttons .btn {
+				padding: 0.625rem 1.5rem;
+				font-weight: 500;
+				font-size: 0.95rem;
+				border-radius: 50px;
+				transition: all 0.3s ease;
+				letter-spacing: 0.3px;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				min-width: 120px;
+				height: 42px;
+			}
+
+			.auth-buttons .btn-outline-primary {
+				color: #722f37;
+				border: 2px solid #722f37;
+				background: transparent;
+			}
+
+			.auth-buttons .btn-outline-primary:hover,
+			.auth-buttons .btn-outline-primary:focus {
+				color: #fff;
+				background: #722f37;
+				border-color: #722f37;
+				box-shadow: 0 4px 12px rgba(114, 47, 55, 0.2);
+				transform: translateY(-1px);
+			}
+
+			.auth-buttons .btn-primary {
+				color: #fff;
+				background: #722f37;
+				border: none;
+				box-shadow: 0 4px 12px rgba(114, 47, 55, 0.15);
+			}
+
+			.auth-buttons .btn-primary:hover,
+			.auth-buttons .btn-primary:focus {
+				background: #8b4513;
+				box-shadow: 0 6px 16px rgba(114, 47, 55, 0.25);
+				transform: translateY(-1px);
+			}
+
+			@media (max-width: 991.98px) {
+				.auth-buttons {
+					margin-top: 1rem;
+					width: 100%;
+					gap: 1rem;
+				}
+
+				.auth-buttons .btn {
+					flex: 1;
+					min-width: unset;
+				}
+			}
+
+			.user-menu .dropdown-toggle::after {
+				display: none;
+			}
+
+			.user-menu .dropdown-toggle {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				padding: 0.5rem 1rem;
+				border-radius: 8px;
+				transition: all 0.3s ease;
+			}
+
+			.user-menu .dropdown-toggle:hover {
+				background-color: var(--wine-light);
+			}
+
+			.user-avatar {
+				width: 32px;
+				height: 32px;
+				border-radius: 50%;
+				background-color: var(--wine-primary);
+				color: white;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-weight: 600;
+				margin-right: 0.5rem;
+			}
+
+			.dropdown-menu {
+				z-index: 1050;
+				display: none;
+				position: absolute;
+				right: 0;
+				top: 100%;
+				margin-top: 0.5rem;
+				min-width: 200px;
+				background: white;
+				border-radius: 8px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+				border: 1px solid rgba(0, 0, 0, 0.08);
+				padding: 0.5rem 0;
+			}
+
+			.dropdown-menu.show {
+				display: block;
+				animation: dropdownFade 0.2s ease;
+			}
+
+			@keyframes dropdownFade {
+				from {
+					opacity: 0;
+					transform: translateY(-10px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.nav-item.dropdown {
+				position: relative;
+			}
+
+			.dropdown-item {
+				padding: 0.75rem 1.25rem;
+				display: flex;
+				align-items: center;
+				gap: 0.75rem;
+				color: var(--text-primary);
+				transition: all 0.2s ease;
+			}
+
+			.dropdown-item i {
+				font-size: 1.1rem;
+				color: var(--text-secondary);
+				width: 20px;
+				text-align: center;
+			}
+
+			.dropdown-item:hover {
+				background-color: rgba(114, 47, 55, 0.08);
+				color: var(--wine-primary);
+				transform: translateX(5px);
+			}
+
+			.dropdown-item:hover i {
+				color: var(--wine-primary);
+			}
+
+			.dropdown-divider {
+				margin: 0.5rem 0;
+				border-color: rgba(0, 0, 0, 0.08);
+			}
+
+			#cartCount {
+				background: var(--wine-primary);
+				color: white;
+				padding: 0.25rem 0.5rem;
+				border-radius: 50px;
+				font-size: 0.75rem;
+				font-weight: 500;
+			}
+
+			@media (max-width: 991.98px) {
+				.dropdown-menu {
+					position: static;
+					box-shadow: none;
+					border: none;
+					margin-top: 0;
+					background: transparent;
+				}
+
+				.dropdown-item {
+					padding: 0.75rem 1rem;
+				}
+
+				.dropdown-item:hover {
+					transform: none;
+				}
+			}
+		</style>
+	</body>
+</html>

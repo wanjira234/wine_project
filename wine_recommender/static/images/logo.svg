@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Wine Glass -->
+    <g transform="translate(4, 4) scale(0.15)">
+        <path class="wine-glass-bowl" d="M75 50C75 30 105 20 150 20C195 20 225 30 225 50C225 150 150 180 150 220V280H75V220C75 180 0 150 0 50H75Z" fill="rgba(155, 34, 66, 0.1)"/>
+        <path class="wine-glass-wine" d="M90 60C90 40 115 30 150 30C185 30 210 40 210 60C210 140 150 170 150 200V260H90V200C90 170 30 140 30 60H90Z" fill="rgba(155, 34, 66, 0.3)"/>
+        <path class="wine-glass-shine" d="M105 70C105 50 125 40 150 40C175 40 195 50 195 70C195 130 150 160 150 180V240H105V180C105 160 45 130 45 70H105Z" fill="#9B2242"/>
+        <circle class="wine-glass-highlight" cx="150" cy="80" r="10" fill="rgba(255, 255, 255, 0.2)"/>
+        <path class="wine-glass-highlight-2" d="M130 100L170 100" stroke="rgba(255, 255, 255, 0.1)" stroke-width="2"/>
+    </g>
+</svg> 

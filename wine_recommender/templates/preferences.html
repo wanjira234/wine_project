@@ -1,0 +1,235 @@
+{% extends "base.html" %} {% block title %}Edit Preferences{% endblock %} {%
+block content %}
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-md-8">
+			<div class="card">
+				<div class="card-header">
+					<h3 class="mb-0">Wine Preferences</h3>
+				</div>
+				<div class="card-body">
+					<form method="POST" action="{{ url_for('main.edit_preferences') }}">
+						{{ form.csrf_token }}
+
+						<div class="mb-4">
+							<h4>Wine Knowledge</h4>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									{{ form.experience_level.label(class="form-label") }} {{
+									form.experience_level(class="form-select") }}
+								</div>
+								<div class="col-md-6 mb-3">
+									{{ form.drinking_frequency.label(class="form-label") }} {{
+									form.drinking_frequency(class="form-select") }}
+								</div>
+							</div>
+						</div>
+
+						<div class="mb-4">
+							<h4>Budget Preferences</h4>
+							<div class="row">
+								<div class="col-md-4 mb-3">
+									{{ form.min_price.label(class="form-label") }} {{
+									form.min_price(class="form-control") }}
+								</div>
+								<div class="col-md-4 mb-3">
+									{{ form.max_price.label(class="form-label") }} {{
+									form.max_price(class="form-control") }}
+								</div>
+								<div class="col-md-4 mb-3">
+									{{ form.currency.label(class="form-label") }} {{
+									form.currency(class="form-select") }}
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									{{ form.special_occasion_price.label(class="form-label") }} {{
+									form.special_occasion_price(class="form-control") }}
+								</div>
+							</div>
+						</div>
+
+						<div class="mb-4">
+							<h4>Taste Profile</h4>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									{{ form.red_wine_body.label(class="form-label") }} {{
+									form.red_wine_body(class="form-select") }}
+								</div>
+								<div class="col-md-6 mb-3">
+									{{ form.white_wine_body.label(class="form-label") }} {{
+									form.white_wine_body(class="form-select") }}
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									{{ form.red_wine_sweetness.label(class="form-label") }} {{
+									form.red_wine_sweetness(class="form-select") }}
+								</div>
+								<div class="col-md-6 mb-3">
+									{{ form.white_wine_sweetness.label(class="form-label") }} {{
+									form.white_wine_sweetness(class="form-select") }}
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									{{ form.flavor_intensity.label(class="form-label") }} {{
+									form.flavor_intensity(class="form-select") }}
+								</div>
+							</div>
+
+							<!-- Wine Traits Selection -->
+							<div class="row mt-4">
+								<div class="col-md-6 mb-3">
+									<h5>Red Wine Traits</h5>
+									<select
+										class="form-select"
+										id="red-wine-traits"
+										multiple
+										data-placeholder="Select traits"
+									>
+										{% for category in trait_categories %}
+										<optgroup label="{{ category|replace('_', ' ')|title }}">
+											{% for trait in traits_by_category[category] %}
+											<option value="{{ trait }}">
+												{{ trait|replace('_', ' ')|title }}
+											</option>
+											{% endfor %}
+										</optgroup>
+										{% endfor %}
+									</select>
+									<input
+										type="hidden"
+										name="red_wine_traits"
+										id="red-wine-traits-input"
+									/>
+								</div>
+								<div class="col-md-6 mb-3">
+									<h5>White Wine Traits</h5>
+									<select
+										class="form-select"
+										id="white-wine-traits"
+										multiple
+										data-placeholder="Select traits"
+									>
+										{% for category in trait_categories %}
+										<optgroup label="{{ category|replace('_', ' ')|title }}">
+											{% for trait in traits_by_category[category] %}
+											<option value="{{ trait }}">
+												{{ trait|replace('_', ' ')|title }}
+											</option>
+											{% endfor %}
+										</optgroup>
+										{% endfor %}
+									</select>
+									<input
+										type="hidden"
+										name="white_wine_traits"
+										id="white-wine-traits-input"
+									/>
+								</div>
+							</div>
+
+							<!-- Disliked Characteristics -->
+							<div class="row mt-4">
+								<div class="col-12 mb-3">
+									<h5>Disliked Characteristics</h5>
+									<select
+										class="form-select"
+										id="disliked-traits"
+										multiple
+										data-placeholder="Select traits to avoid"
+									>
+										{% for category in trait_categories %}
+										<optgroup label="{{ category|replace('_', ' ')|title }}">
+											{% for trait in traits_by_category[category] %}
+											<option value="{{ trait }}">
+												{{ trait|replace('_', ' ')|title }}
+											</option>
+											{% endfor %}
+										</optgroup>
+										{% endfor %}
+									</select>
+									<input
+										type="hidden"
+										name="disliked_characteristics"
+										id="disliked-traits-input"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<div class="mb-4">
+							<h4>Rating Preferences</h4>
+							<div class="row">
+								<div class="col-md-4 mb-3">
+									{{ form.minimum_rating.label(class="form-label") }} {{
+									form.minimum_rating(class="form-control") }}
+								</div>
+								<div class="col-md-4 mb-3">
+									{{ form.price_sensitivity.label(class="form-label") }} {{
+									form.price_sensitivity(class="form-select") }}
+								</div>
+								<div class="col-md-4 mb-3">
+									{{ form.quality_preference.label(class="form-label") }} {{
+									form.quality_preference(class="form-select") }}
+								</div>
+							</div>
+						</div>
+
+						<div class="text-end">
+							<a
+								href="{{ url_for('main.profile') }}"
+								class="btn btn-secondary me-2"
+								>Cancel</a
+							>
+							<button type="submit" class="btn btn-primary">
+								Save Preferences
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Include Select2 CSS -->
+<link
+	href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+	rel="stylesheet"
+/>
+
+{% endblock %} {% block scripts %}
+<!-- Include Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+	$(document).ready(function() {
+		// Initialize Select2 for multiple selects
+		$('#red-wine-traits, #white-wine-traits, #disliked-traits').select2({
+			theme: 'classic',
+			width: '100%',
+			placeholder: $(this).data('placeholder'),
+			allowClear: true
+		});
+
+		// Pre-select existing traits
+		{% if current_user.preferences %}
+			var redWineTraits = {{ current_user.preferences.taste_profile.preferred_traits.red_wine_traits|tojson|safe }};
+			var whiteWineTraits = {{ current_user.preferences.taste_profile.preferred_traits.white_wine_traits|tojson|safe }};
+			var dislikedTraits = {{ current_user.preferences.taste_profile.disliked_characteristics|tojson|safe }};
+
+			$('#red-wine-traits').val(redWineTraits).trigger('change');
+			$('#white-wine-traits').val(whiteWineTraits).trigger('change');
+			$('#disliked-traits').val(dislikedTraits).trigger('change');
+		{% endif %}
+
+		// Update hidden inputs before form submission
+		$('form').on('submit', function() {
+			$('#red-wine-traits-input').val(JSON.stringify($('#red-wine-traits').val()));
+			$('#white-wine-traits-input').val(JSON.stringify($('#white-wine-traits').val()));
+			$('#disliked-traits-input').val(JSON.stringify($('#disliked-traits').val()));
+		});
+	});
+</script>
+{% endblock %}

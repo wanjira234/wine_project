@@ -1,0 +1,746 @@
+{% extends "base.html" %} {% block title %}Your Wine Recommendations{% endblock
+%} {% block content %}
+<section class="recommendations-section">
+	<div class="container">
+
+		<div class="recommendations-header">
+			<h1 class="display-4 text-wine mb-3">Your Personalized Wine Recommendations</h1>
+			<p class="lead text-muted">
+				Based on your preferences: {{ current_user.preferences.wine_experience.experience_level|title }} wine drinker
+				{% if current_user.preferences.wine_experience.wine_types|length <= 2 %}
+					who enjoys {{ current_user.preferences.wine_experience.wine_types|join(' and ') }} wines
+				{% else %}
+					who enjoys various wine types
+				{% endif %}
+			</p>
+		</div>
+
+		<div class="recommendations-filters mb-4">
+			<form id="filterForm" method="GET" action="{{ url_for('main.recommendations') }}" class="row g-3">
+				<div class="d-flex align-items-center gap-4">
+					<div class="d-flex align-items-center gap-2">
+						<label for="minPoints" class="form-label mb-0">Minimum Points</label>
+						<select class="form-select custom-select" id="minPoints" name="min_points">
+							<option value="">Any Points</option>
+							<option value="90" {% if min_points == 90 %}selected{% endif %}>90+ Points</option>
+							<option value="85" {% if min_points == 85 %}selected{% endif %}>85+ Points</option>
+							<option value="80" {% if min_points == 80 %}selected{% endif %}>80+ Points</option>
+					</select>
+					</div>
+					<div class="d-flex align-items-center gap-2">
+						<span class="text-muted">
+							<i class="fas fa-wallet me-1"></i>Max Price: ${{ "%.0f"|format(current_user.preferences.wine_style.price_ranges.regular.max) }}
+						</span>
+					</div>
+					<button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
+						<i class="fas fa-sliders-h me-1"></i> Additional Filters
+					</button>
+					<div class="ms-auto">
+						<button type="submit" class="btn btn-primary">Apply Filters</button>
+						<button type="reset" class="btn btn-outline-secondary ms-2">Reset</button>
+					</div>
+				</div>
+				
+				<div class="collapse" id="advancedFilters">
+					<div class="row g-3">
+						<div class="col-md-4">
+							<label for="country" class="form-label">Country</label>
+							<select class="form-select" id="country" name="country">
+								<option value="">Any Country</option>
+								{% for country in countries[:20] %}
+								<option value="{{ country }}" {% if selected_country == country %}selected{% endif %}>
+									{{ country }}
+								</option>
+								{% endfor %}
+					</select>
+				</div>
+						<div class="col-md-4">
+							<label for="variety" class="form-label">Variety</label>
+							<select class="form-select" id="variety" name="variety">
+								<option value="">Any Variety</option>
+								{% for variety in varieties[:20] %}
+								<option value="{{ variety }}" {% if selected_variety == variety %}selected{% endif %}>
+									{{ variety }}
+								</option>
+								{% endfor %}
+					</select>
+				</div>
+			</div>
+				</div>
+			</form>
+		</div>
+
+		{% if recommendations %}
+		<div class="recommendations-grid">
+			<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+				{% for wine in recommendations[:9] %}
+				<div class="col">
+				<div class="wine-card">
+						<div class="wine-image" data-bs-toggle="modal" data-bs-target="#wineModal{{ wine.id }}">
+							<img src="{{ url_for('static', filename='images/wines/default.jpg') }}" alt="{{ wine.title }}">
+							{% if wine.points >= 90 %}
+							<div class="match-badge">
+								<i class="fas fa-star"></i> {{ "%.0f"|format(wine.points) }} Points
+							</div>
+							{% endif %}
+						</div>
+						<div class="wine-info">
+							<h5 class="wine-title text-truncate" title="{{ wine.title }}">{{ wine.title }}</h5>
+							<p class="wine-variety text-truncate">{{ wine.variety }}</p>
+							<div class="wine-meta">
+								<span class="wine-rating">
+									<i class="fas fa-star"></i> {{ "%.1f"|format(wine.points/20) }}
+								</span>
+								<span class="wine-price">${{ "%.0f"|format(wine.price) }}</span>
+					</div>
+							<button class="btn btn-primary btn-add-cart w-100 mt-3" data-wine-id="{{ wine.id }}">
+								<i class="fas fa-shopping-cart me-2"></i>Add to Cart
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Wine Modal -->
+				<div class="modal fade" id="wineModal{{ wine.id }}" tabindex="-1" aria-labelledby="wineModalLabel{{ wine.id }}" aria-hidden="true">
+					<div class="modal-dialog modal-lg">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="wineModalLabel{{ wine.id }}">{{ wine.title }}</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							<div class="modal-body">
+								<div class="row">
+									<div class="col-md-5">
+										<img src="{{ url_for('static', filename='images/wines/default.jpg') }}" alt="{{ wine.title }}" class="img-fluid rounded">
+									</div>
+									<div class="col-md-7">
+										<div class="wine-details">
+											<div class="d-flex justify-content-between align-items-center mb-3">
+												<h3 class="wine-price-large">${{ "%.0f"|format(wine.price) }}</h3>
+												<div class="wine-rating-large">
+													<i class="fas fa-star"></i> {{ "%.1f"|format(wine.points/20) }}
+												</div>
+											</div>
+											<div class="wine-info-grid">
+												<div class="info-item">
+													<i class="fas fa-wine-bottle"></i>
+													<div>
+														<small>Variety</small>
+														<p class="mb-0">{{ wine.variety }}</p>
+													</div>
+												</div>
+												<div class="info-item">
+													<i class="fas fa-globe-americas"></i>
+													<div>
+														<small>Region</small>
+														<p class="mb-0">{{ wine.province }}, {{ wine.country }}</p>
+													</div>
+												</div>
+												<div class="info-item">
+													<i class="fas fa-home"></i>
+													<div>
+														<small>Winery</small>
+														<p class="mb-0">{{ wine.winery }}</p>
+													</div>
+												</div>
+												{% if wine.designation %}
+												<div class="info-item">
+													<i class="fas fa-award"></i>
+													<div>
+														<small>Designation</small>
+														<p class="mb-0">{{ wine.designation }}</p>
+													</div>
+												</div>
+												{% endif %}
+											</div>
+											<div class="wine-description mt-4">
+												<h6>Tasting Notes</h6>
+												<p>{{ wine.description }}</p>
+						</div>
+											<div class="d-grid gap-2 mt-4">
+												<button class="btn btn-primary btn-lg btn-add-cart" data-wine-id="{{ wine.id }}">
+													<i class="fas fa-shopping-cart me-2"></i>Add to Cart
+						</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+
+			<!-- Pagination -->
+			{% if recommendations|length > 9 %}
+			<div class="pagination-container mt-4">
+				<nav aria-label="Wine recommendations pages">
+					<ul class="pagination justify-content-center">
+						{% set total_pages = (recommendations|length / 9)|round(0, 'ceil')|int %}
+						{% set current_page = request.args.get('page', 1)|int %}
+						
+						<li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+							<a class="page-link" href="{{ url_for('main.recommendations', 
+								page=current_page-1,
+								country=selected_country,
+								variety=selected_variety,
+								min_points=min_points) }}" aria-label="Previous">
+								<span aria-hidden="true">&laquo;</span>
+							</a>
+						</li>
+						
+						{% for page in range(1, total_pages + 1) %}
+						<li class="page-item {% if page == current_page %}active{% endif %}">
+							<a class="page-link" href="{{ url_for('main.recommendations', 
+								page=page,
+								country=selected_country,
+								variety=selected_variety,
+								min_points=min_points) }}">{{ page }}</a>
+						</li>
+			{% endfor %}
+						
+						<li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+							<a class="page-link" href="{{ url_for('main.recommendations', 
+								page=current_page+1,
+								country=selected_country,
+								variety=selected_variety,
+								min_points=min_points) }}" aria-label="Next">
+								<span aria-hidden="true">&raquo;</span>
+							</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+			{% endif %}
+		</div>
+		{% else %}
+		<div class="no-results text-center py-5">
+			<i class="fas fa-wine-glass-alt fa-3x mb-3 text-muted"></i>
+			<h3>No Wines Found</h3>
+			<p class="text-muted mb-4">We couldn't find any wines matching your current filters. Try adjusting your search criteria to see more results.</p>
+			<div class="suggestions">
+				<h5>Suggestions:</h5>
+				<ul class="list-unstyled">
+					<li>Try removing some filters to broaden your search</li>
+					<li>Check if there are any typos in your search terms</li>
+					<li>Try different combinations of filters</li>
+					<li>Consider updating your wine preferences to see different recommendations</li>
+				</ul>
+			</div>
+			<a href="{{ url_for('main.profile') }}" class="btn btn-outline-primary mt-3">
+				<i class="fas fa-user-edit me-2"></i>Update Preferences
+			</a>
+		</div>
+		{% endif %}
+	</div>
+</section>
+
+<style>
+:root {
+	--wine-primary: #9B6B6C;       /* Muted rose wine */
+	--wine-secondary: #826267;     /* Soft burgundy */
+	--wine-light: #F5EBEB;         /* Very light rose */
+	--wine-dark: #695457;          /* Deep muted wine */
+	--wine-accent: #FAF2F2;        /* Softest rose background */
+	--gold: #B8860B;               /* Darker gold for better contrast */
+	--shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+	--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+	--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+	--transition: all 0.3s ease;
+}
+
+	.recommendations-section {
+	padding: 4rem 0;
+	background: linear-gradient(135deg, #fff 0%, var(--wine-light) 100%);
+	min-height: calc(100vh - 76px);
+}
+
+.text-wine {
+	color: var(--wine-primary);
+	}
+
+	.recommendations-header {
+		text-align: center;
+		margin-bottom: 4rem;
+		padding: 0 1rem;
+	}
+
+	.recommendations-header h1 {
+	font-family: 'Playfair Display', serif;
+	font-weight: 700;
+	color: var(--wine-dark);
+	margin-bottom: 1.5rem;
+	font-size: 3rem;
+	}
+
+	.recommendations-header .lead {
+	font-size: 1.2rem;
+	color: var(--wine-secondary);
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+.recommendations-filters {
+	background: white;
+	padding: 2rem;
+	border-radius: 20px;
+	box-shadow: var(--shadow-lg);
+	margin-bottom: 3rem;
+}
+
+.form-select {
+	border: 1px solid var(--wine-light);
+	border-radius: 12px;
+	padding: 0.8rem;
+	color: var(--wine-dark);
+	transition: var(--transition);
+}
+
+.form-select:focus {
+	border-color: var(--wine-primary);
+	box-shadow: 0 0 0 0.2rem rgba(114, 47, 55, 0.1);
+	}
+
+	.wine-card {
+	background: white;
+	border-radius: 20px;
+	box-shadow: var(--shadow-md);
+	transition: var(--transition);
+		overflow: hidden;
+		height: 100%;
+	border: 1px solid var(--wine-light);
+	}
+
+	.wine-card:hover {
+		transform: translateY(-5px);
+	box-shadow: var(--shadow-lg);
+	}
+
+.wine-image {
+		position: relative;
+	height: 280px;
+	overflow: hidden;
+		background: var(--wine-light);
+	}
+
+.wine-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: var(--transition);
+	filter: sepia(20%) brightness(102%) contrast(95%);
+	mix-blend-mode: multiply;
+}
+
+.wine-image::before {
+	content: '';
+		position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(to bottom, var(--wine-accent) 0%, transparent 100%);
+	opacity: 0.4;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.match-badge {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+	background: var(--wine-secondary);
+	color: white;
+	padding: 0.6rem 1.2rem;
+	border-radius: 25px;
+	font-size: 0.9rem;
+		font-weight: 600;
+	box-shadow: var(--shadow-sm);
+	z-index: 2;
+}
+
+.wine-info {
+	padding: 2rem;
+}
+
+.wine-title {
+	font-family: 'Playfair Display', serif;
+		font-size: 1.2rem;
+	color: var(--wine-dark);
+	margin-bottom: 0.5rem;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+.wine-variety {
+	color: var(--wine-secondary);
+	font-size: 1rem;
+		margin-bottom: 1rem;
+}
+
+.wine-meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-top: 1rem;
+	border-top: 1px solid var(--wine-light);
+	margin-top: 1rem;
+	}
+
+	.wine-rating {
+	color: var(--gold);
+	font-weight: 600;
+	font-size: 1rem;
+}
+
+.wine-rating i {
+	margin-right: 0.3rem;
+}
+
+.wine-price {
+	color: var(--wine-primary);
+	font-weight: 700;
+	font-size: 1.3rem;
+}
+
+.btn-add-cart {
+	background: var(--wine-primary);
+	color: white;
+	border: none;
+	padding: 1rem;
+	border-radius: 12px;
+	font-weight: 600;
+	width: 100%;
+	margin-top: 1.5rem;
+	transition: var(--transition);
+}
+
+.btn-add-cart:hover {
+	background: var(--wine-secondary);
+	transform: translateY(-2px);
+}
+
+.modal-content {
+	border-radius: 20px;
+	overflow: hidden;
+}
+
+.modal-header {
+	background: var(--wine-secondary);
+	color: white;
+	padding: 1.5rem 2rem;
+}
+
+.modal-body {
+	padding: 2rem;
+}
+
+.wine-price-large {
+	color: var(--wine-primary);
+	font-size: 2.5rem;
+		font-weight: 700;
+}
+
+.wine-rating-large {
+	background: var(--gold);
+	color: white;
+	padding: 0.8rem 1.5rem;
+	border-radius: 30px;
+	font-size: 1.2rem;
+	font-weight: 600;
+}
+
+.wine-info-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 1.5rem;
+	margin: 2rem 0;
+}
+
+.info-item {
+	background: var(--wine-accent);
+	padding: 1.5rem;
+	border-radius: 15px;
+	transition: var(--transition);
+}
+
+.info-item:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-sm);
+}
+
+.wine-description {
+	background: var(--wine-accent);
+	padding: 2rem;
+	border-radius: 15px;
+	margin-top: 2rem;
+}
+
+.wine-description h6 {
+		color: var(--wine-primary);
+	font-family: 'Playfair Display', serif;
+	font-size: 1.2rem;
+		margin-bottom: 1rem;
+	}
+
+.pagination {
+	margin-top: 4rem;
+}
+
+.page-link {
+	color: var(--wine-primary);
+	border: 1px solid var(--wine-light);
+	padding: 0.8rem 1.2rem;
+	margin: 0 0.3rem;
+	border-radius: 12px;
+	transition: var(--transition);
+}
+
+.page-link:hover {
+	background: var(--wine-light);
+	color: var(--wine-primary);
+	border-color: var(--wine-primary);
+}
+
+.page-item.active .page-link {
+	background: var(--wine-primary);
+	border-color: var(--wine-primary);
+}
+
+.toast {
+	border-radius: 15px;
+	box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 768px) {
+	.recommendations-header h1 {
+		font-size: 2.5rem;
+	}
+
+	.wine-image {
+		height: 220px;
+	}
+
+	.wine-info {
+		padding: 1.5rem;
+	}
+}
+
+@media (max-width: 576px) {
+		.recommendations-header h1 {
+			font-size: 2rem;
+		}
+
+	.wine-image {
+		height: 200px;
+	}
+}
+
+.dropdown-toggle::after {
+	display: inline-block;
+	margin-left: 0.5em;
+	vertical-align: 0.255em;
+	content: "";
+	border-top: 0.3em solid;
+	border-right: 0.3em solid transparent;
+	border-bottom: 0;
+	border-left: 0.3em solid transparent;
+}
+
+.dropdown-menu {
+	margin-top: 0.5rem;
+	border: 1px solid var(--wine-light);
+	border-radius: 12px;
+	box-shadow: var(--shadow-md);
+	background: white;
+	z-index: 1021;
+}
+
+.dropdown-item {
+	padding: 0.75rem 1.5rem;
+	color: var(--wine-dark);
+	transition: var(--transition);
+}
+
+.dropdown-item:hover {
+	background-color: var(--wine-light);
+	color: var(--wine-primary);
+}
+
+.dropdown-divider {
+	border-top: 1px solid var(--wine-light);
+	margin: 0.5rem 0;
+}
+
+/* Collapse styles */
+.collapse {
+	display: none;
+}
+
+.collapse.show {
+	display: block;
+}
+
+.collapsing {
+	position: relative;
+	height: 0;
+	overflow: hidden;
+	transition: height 0.35s ease;
+	}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	// Initialize Bootstrap components
+	var dropdowns = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+	dropdowns.forEach(function(dropdown) {
+		new bootstrap.Dropdown(dropdown);
+	});
+
+	var collapseElements = document.querySelectorAll('[data-bs-toggle="collapse"]');
+	collapseElements.forEach(function(collapse) {
+		new bootstrap.Collapse(collapse, {
+			toggle: false
+		});
+	});
+
+	// Get CSRF token from meta tag
+	const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+	
+	// Update provinces when country changes
+	const countrySelect = document.getElementById('country');
+	const provinceSelect = document.getElementById('province');
+	
+	if (countrySelect) {
+		countrySelect.addEventListener('change', function() {
+			const country = this.value;
+			if (country) {
+				fetch(`/api/provinces?country=${encodeURIComponent(country)}`, {
+					headers: {
+						'X-CSRFToken': csrfToken
+					}
+				})
+				.then(response => response.json())
+				.then(provinces => {
+					provinceSelect.innerHTML = '<option value="">Any Region</option>';
+					provinces.forEach(province => {
+						const option = document.createElement('option');
+						option.value = province;
+						option.textContent = province;
+						provinceSelect.appendChild(option);
+					});
+				});
+			} else {
+				provinceSelect.innerHTML = '<option value="">Any Region</option>';
+			}
+		});
+	}
+
+	// Handle form reset
+	const filterForm = document.getElementById('filterForm');
+	if (filterForm) {
+		const resetButton = filterForm.querySelector('button[type="reset"]');
+		if (resetButton) {
+			resetButton.addEventListener('click', function(e) {
+				e.preventDefault();
+				
+				// Reset all form elements
+				filterForm.querySelectorAll('select, input').forEach(element => {
+					if (element.type === 'select-one') {
+						element.selectedIndex = 0;
+					} else {
+						element.value = '';
+					}
+				});
+				
+				// Reset province select to default state
+				if (provinceSelect) {
+					provinceSelect.innerHTML = '<option value="">Any Region</option>';
+				}
+				
+				// Redirect to base recommendations URL without query parameters
+				window.location.href = "{{ url_for('main.recommendations') }}";
+			});
+		}
+	}
+
+	// Add to Cart functionality
+	document.querySelectorAll('.btn-add-cart').forEach(button => {
+		button.addEventListener('click', function(e) {
+			e.preventDefault();
+			const wineId = this.getAttribute('data-wine-id');
+			
+			// Create form data
+			const formData = new FormData();
+			formData.append('wine_id', wineId);
+			formData.append('quantity', '1');
+			
+			fetch('{{ url_for("main.add_to_cart") }}', {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-CSRFToken': csrfToken
+				}
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					const toast = new bootstrap.Toast(document.getElementById('successToast'));
+					document.querySelector('#successToast .toast-body').textContent = data.message;
+					toast.show();
+					
+					const cartCount = document.getElementById('cartCount');
+					if (cartCount) {
+						cartCount.textContent = data.cart_count;
+					}
+				} else {
+					const toast = new bootstrap.Toast(document.getElementById('errorToast'));
+					document.querySelector('#errorToast .toast-body').textContent = data.message;
+					toast.show();
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				const toast = new bootstrap.Toast(document.getElementById('errorToast'));
+				document.querySelector('#errorToast .toast-body').textContent = 'An error occurred while adding to cart';
+				toast.show();
+			});
+		});
+	});
+
+	// Initialize toasts
+	var toastElements = document.querySelectorAll('.toast');
+	toastElements.forEach(function(toastElement) {
+		new bootstrap.Toast(toastElement, {
+			autohide: true,
+			delay: 3000
+		});
+	});
+
+	// Log initialization for debugging
+	console.log('All Bootstrap components initialized');
+	});
+</script>
+
+<!-- Toast Notifications -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="successToast" class="toast bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-transparent border-0">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong class="me-auto">Success</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+    
+    <div id="errorToast" class="toast bg-danger text-white" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-transparent border-0">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong class="me-auto">Error</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+{% endblock %}

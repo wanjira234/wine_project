@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Elements -->
+    <circle cx="300" cy="200" r="180" fill="rgba(114, 47, 55, 0.05)"/>
+    <circle cx="320" cy="180" r="150" fill="rgba(155, 34, 66, 0.08)"/>
+    
+    <!-- Wine Glass -->
+    <path d="M280 80C280 80 220 120 220 200C220 260 280 280 280 280L320 280C320 280 380 260 380 200C380 120 320 80 320 80L280 80Z" fill="#722F37"/>
+    <path d="M290 280L310 280L310 340L290 340L290 280Z" fill="#722F37"/>
+    <path d="M270 340H330V350H270V340Z" fill="#722F37"/>
+    
+    <!-- Wine Liquid -->
+    <path d="M230 160C230 160 270 180 300 180C330 180 370 160 370 160V200C370 250 320 270 320 270H280C280 270 230 250 230 200V160Z" fill="#9B2242"/>
+    
+    <!-- Sparkles -->
+    <circle cx="260" cy="140" r="3" fill="white"/>
+    <circle cx="340" cy="150" r="2" fill="white"/>
+    <circle cx="300" cy="130" r="2" fill="white"/>
+    
+    <!-- Wine Swirl -->
+    <path d="M280 200C280 200 290 220 300 220C310 220 320 200 320 200" stroke="white" stroke-width="2" fill="none"/>
+    
+    <!-- Decorative Elements -->
+    <circle cx="240" cy="100" r="5" fill="rgba(155, 34, 66, 0.3)"/>
+    <circle cx="360" cy="110" r="4" fill="rgba(155, 34, 66, 0.3)"/>
+    <circle cx="300" cy="90" r="3" fill="rgba(155, 34, 66, 0.3)"/>
+</svg> 

@@ -1,0 +1,103 @@
+<!-- Wine Preferences Modal -->
+<div
+	class="modal fade"
+	id="winePreferencesModal"
+	tabindex="-1"
+	aria-labelledby="winePreferencesModalLabel"
+	aria-hidden="true"
+>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="winePreferencesModalLabel">
+					Edit Wine Preferences
+				</h5>
+				<button
+					type="button"
+					class="btn-close"
+					data-bs-dismiss="modal"
+					aria-label="Close"
+				></button>
+			</div>
+			<form
+				action="{{ url_for('main.update_wine_preferences') }}"
+				method="POST"
+			>
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+				<div class="modal-body">
+					<!-- Wine Categories -->
+					<div class="mb-3">
+						<label class="form-label">Wine Categories</label>
+						<select
+							class="form-select"
+							name="wine_categories"
+							multiple
+							data-placeholder="Select categories"
+						>
+							{% for category in wine_categories %}
+							<option
+								value="{{ category.value }}"
+								{%
+								if
+								current_user.preferences
+								and
+								category.value
+								in
+								current_user.preferences.wine_categories
+								%}selected{%
+								endif
+								%}
+							>
+								{{ category.value|replace('_', ' ')|title }}
+							</option>
+							{% endfor %}
+						</select>
+						<div class="form-text">
+							Select one or more wine categories you're interested in.
+						</div>
+					</div>
+
+					<!-- Wine Types -->
+					<div class="mb-3">
+						<label class="form-label">Wine Types</label>
+						<select
+							class="form-select"
+							name="wine_types"
+							multiple
+							data-placeholder="Select types"
+						>
+							{% for type in wine_types %}
+							<option
+								value="{{ type.value }}"
+								{%
+								if
+								current_user.preferences
+								and
+								type.value
+								in
+								current_user.preferences.wine_types
+								%}selected{%
+								endif
+								%}
+							>
+								{{ type.value|replace('_', ' ')|title }}
+							</option>
+							{% endfor %}
+						</select>
+						<div class="form-text">Select specific wine types you prefer.</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button
+						type="button"
+						class="btn btn-secondary"
+						data-bs-dismiss="modal"
+					>
+						Cancel
+					</button>
+					<button type="submit" class="btn btn-primary">Save Changes</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

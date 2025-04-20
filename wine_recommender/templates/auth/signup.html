@@ -1,0 +1,3122 @@
+{% extends "base.html" %} {% block title %}Sign Up{% endblock %} {% block
+content %}
+<section class="auth-section">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-md-8">
+				<div class="auth-card">
+					<div class="auth-header text-center">
+						<img
+							src="{{ url_for('static', filename='images/logo.svg') }}"
+							alt="Wine Expert"
+							class="auth-logo"
+						/>
+						<h1>Create Account</h1>
+						<p class="auth-subtitle">
+							Join Wine Expert to discover your perfect wine
+						</p>
+					</div>
+
+					<!-- Stepper -->
+					<div class="signup-stepper mb-4">
+						<div class="stepper-progress">
+							<div class="progress-bar" style="width: 25%"></div>
+						</div>
+						<div class="stepper-steps">
+							<div class="step active" data-step="1">
+								<div class="step-number">1</div>
+								<div class="step-label">Account</div>
+							</div>
+							<div class="step" data-step="2">
+								<div class="step-number">2</div>
+								<div class="step-label">Experience</div>
+							</div>
+							<div class="step" data-step="3">
+								<div class="step-number">3</div>
+								<div class="step-label">Style</div>
+							</div>
+							<div class="step" data-step="4">
+								<div class="step-number">4</div>
+								<div class="step-label">Traits</div>
+							</div>
+							<div class="step" data-step="5">
+								<div class="step-number">5</div>
+								<div class="step-label">Regions</div>
+							</div>
+							<div class="step" data-step="6">
+								<div class="step-number">6</div>
+								<div class="step-label">Review</div>
+							</div>
+						</div>
+					</div>
+
+					{% with messages = get_flashed_messages(with_categories=true) %} {% if
+					messages %} {% for category, message in messages %}
+					<div
+						class="alert alert-{{ category }} alert-dismissible fade show"
+						role="alert"
+					>
+						{{ message }}
+						<button
+							type="button"
+							class="btn-close"
+							data-bs-dismiss="alert"
+							aria-label="Close"
+						></button>
+					</div>
+					{% endfor %} {% endif %} {% endwith %}
+
+					<form
+						method="POST"
+						action="{{ url_for('auth.signup') }}"
+						class="auth-form"
+						id="signupForm"
+					>
+						<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+						<!-- Step 1: Account Information -->
+						<div class="form-step" data-step="1">
+							<div class="form-floating mb-3">
+								<input
+									type="text"
+									class="form-control"
+									id="name"
+									name="name"
+									placeholder="Full Name"
+									required
+								/>
+								<label for="name">Full Name</label>
+							</div>
+
+							<div class="form-floating mb-3">
+								<input
+									type="email"
+									class="form-control"
+									id="email"
+									name="email"
+									placeholder="name@example.com"
+									required
+								/>
+								<label for="email">Email address</label>
+							</div>
+
+							<div class="form-floating mb-4 password-field">
+								<input
+									type="password"
+									class="form-control"
+									id="password"
+									name="password"
+									placeholder="Password"
+									required
+								/>
+								<label for="password">Password</label>
+								<button
+									type="button"
+									class="btn btn-link password-toggle"
+									aria-label="Toggle password visibility"
+								>
+									<i class="far fa-eye"></i>
+								</button>
+								<div class="password-strength mt-2 d-none">
+									<div class="progress" style="height: 4px">
+										<div
+											class="progress-bar"
+											role="progressbar"
+											style="width: 0%"
+										></div>
+									</div>
+									<div class="requirements small mt-2">
+										<p class="mb-1 requirement" data-requirement="length">
+											<i class="fas fa-circle-notch"></i> At least 8 characters
+										</p>
+										<p class="mb-1 requirement" data-requirement="number">
+											<i class="fas fa-circle-notch"></i> Contains a number
+										</p>
+										<p class="mb-1 requirement" data-requirement="uppercase">
+											<i class="fas fa-circle-notch"></i> Contains uppercase
+											letter
+										</p>
+										<p class="mb-0 requirement" data-requirement="special">
+											<i class="fas fa-circle-notch"></i> Contains special
+											character
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<div class="form-floating mb-4 password-field">
+								<input
+									type="password"
+									class="form-control"
+									id="confirm_password"
+									name="confirm_password"
+									placeholder="Confirm Password"
+									required
+								/>
+								<label for="confirm_password">Confirm Password</label>
+								<button
+									type="button"
+									class="btn btn-link password-toggle"
+									aria-label="Toggle password visibility"
+								>
+									<i class="far fa-eye"></i>
+								</button>
+								<div
+									class="password-match-message mt-1 small d-none text-danger"
+								>
+									Passwords do not match
+								</div>
+							</div>
+						</div>
+
+						<!-- Step 2: Experience & Preferences -->
+						<div class="form-step d-none" data-step="2">
+							<div class="step-header text-center mb-5">
+								<h3 class="step-title">Your Wine Journey</h3>
+								<p class="step-description">
+									Tell us about your wine experience and preferences to help us
+									personalize your recommendations.
+								</p>
+							</div>
+
+							<!-- Experience Level -->
+							<div class="experience-section mb-5">
+								<div class="section-header mb-4">
+									<h4 class="section-title">
+										<i class="fas fa-wine-glass-alt me-2"></i>Experience Level
+									</h4>
+									<p class="section-subtitle">
+										How familiar are you with wine?
+									</p>
+								</div>
+								<div class="row g-4">
+									{% for level in experience_levels %}
+									<div class="col-md-4">
+										<div class="experience-card">
+											<input
+												type="radio"
+												class="btn-check"
+												name="experience_level"
+												id="exp_step2_{{ level.value }}"
+												value="{{ level.value }}"
+												{%
+												if
+												loop.first
+												%}checked{%
+												endif
+												%}
+											/>
+											<label
+												class="wine-card"
+												for="exp_step2_{{ level.value }}"
+											>
+												<div class="wine-card-content">
+													<div class="wine-card-icon">
+														<i
+															class="fas {% if level.value == 'beginner' %}fa-seedling{% elif level.value == 'intermediate' %}fa-glass-cheers{% else %}fa-wine-glass-alt{% endif %}"
+														></i>
+													</div>
+													<h5 class="wine-card-title">{{ level.name }}</h5>
+													<p class="wine-card-description">
+														{{ level.description }}
+													</p>
+												</div>
+											</label>
+										</div>
+									</div>
+									{% endfor %}
+								</div>
+							</div>
+
+							<!-- Drinking Frequency -->
+							<div class="frequency-section mb-5">
+								<div class="section-header mb-4">
+									<h4 class="section-title">
+										<i class="fas fa-calendar-alt me-2"></i>Drinking Frequency
+									</h4>
+									<p class="section-subtitle">How often do you enjoy wine?</p>
+								</div>
+								<div class="row g-4">
+									{% for freq in drinking_frequencies %}
+									<div class="col-md-3">
+										<div class="frequency-card">
+											<input
+												type="radio"
+												class="btn-check"
+												name="drinking_frequency"
+												id="freq_step2_{{ freq.value }}"
+												value="{{ freq.value }}"
+												{%
+												if
+												loop.first
+												%}checked{%
+												endif
+												%}
+											/>
+											<label
+												class="wine-card"
+												for="freq_step2_{{ freq.value }}"
+											>
+												<div class="wine-card-content">
+													<div class="wine-card-icon">
+														<i
+															class="fas {% if freq.value == 'rarely' %}fa-calendar-alt{% elif freq.value == 'occasionally' %}fa-calendar-week{% elif freq.value == 'regularly' %}fa-calendar-check{% else %}fa-calendar-day{% endif %}"
+														></i>
+													</div>
+													<h5 class="wine-card-title">{{ freq.name }}</h5>
+													<p class="wine-card-description">
+														{{ freq.description }}
+													</p>
+												</div>
+											</label>
+										</div>
+									</div>
+									{% endfor %}
+								</div>
+							</div>
+
+							<!-- Wine Types -->
+							<div class="wine-types-section">
+								<div class="section-header mb-4">
+									<h4 class="section-title">
+										<i class="fas fa-wine-bottle me-2"></i>Preferred Wine Types
+									</h4>
+									<p class="section-subtitle">
+										Select all the wine types you enjoy
+									</p>
+								</div>
+								<div class="row g-4">
+									{% for type in wine_types %}
+									<div class="col-md-4">
+										<div class="wine-type-card">
+											<input
+												type="checkbox"
+												class="btn-check"
+												name="wine_types"
+												id="type_step2_{{ type.value }}"
+												value="{{ type.value }}"
+											/>
+											<label
+												class="wine-card"
+												for="type_step2_{{ type.value }}"
+											>
+												<div class="wine-card-content">
+													<div
+														class="wine-card-icon wine-type-icon-{{ type.value }}"
+													>
+														<i
+															class="fas {{ type.icon.icon }} {{ type.icon.color }}"
+														></i>
+													</div>
+													<h5 class="wine-card-title">{{ type.name }}</h5>
+													<p class="wine-card-description">
+														{% if type.value == 'red' %}Bold and rich red wines
+														{% elif type.value == 'white' %}Crisp and fresh
+														white wines {% elif type.value == 'rose' %}Light and
+														fruity rosé wines {% elif type.value == 'sparkling'
+														%}Bubbly and festive sparkling wines {% else %}Sweet
+														and complex dessert wines{% endif %}
+													</p>
+												</div>
+											</label>
+										</div>
+									</div>
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+
+						<!-- Step 3: Wine Style -->
+						<div class="form-step d-none" data-step="3">
+							<div class="step-header text-center mb-5">
+								<h3 class="step-title">Your Wine Style</h3>
+								<p class="step-description">
+									Help us understand your basic wine preferences
+								</p>
+							</div>
+
+							<!-- Body Preference -->
+							<div class="preference-section mb-5">
+								<div class="section-header mb-4">
+									<h4 class="section-title">
+										<i class="fas fa-wine-glass-alt me-2"></i>Body Preference
+									</h4>
+									<p class="section-subtitle">
+										How full-bodied do you like your wines?
+									</p>
+								</div>
+								<div class="row g-4">
+									<div class="col-md-4">
+										<div class="preference-card">
+											<input
+												type="radio"
+												class="btn-check"
+												name="body_preference"
+												id="body_light"
+												value="LIGHT"
+											/>
+											<label class="wine-card" for="body_light">
+												<div class="wine-card-content">
+													<div class="wine-card-icon">
+														<i class="fas fa-feather"></i>
+													</div>
+													<h5 class="wine-card-title">Light</h5>
+													<p class="wine-card-description">
+														Delicate and refreshing, like Pinot Grigio
+													</p>
+												</div>
+											</label>
+										</div>
+									</div>
+									<div class="col-md-4">
+										<div class="preference-card">
+											<input
+												type="radio"
+												class="btn-check"
+												name="body_preference"
+												id="body_medium"
+												value="MEDIUM"
+												checked
+											/>
+											<label class="wine-card" for="body_medium">
+												<div class="wine-card-content">
+													<div class="wine-card-icon">
+														<i class="fas fa-balance-scale"></i>
+													</div>
+													<h5 class="wine-card-title">Medium</h5>
+													<p class="wine-card-description">
+														Balanced and versatile, like Merlot
+													</p>
+												</div>
+											</label>
+										</div>
+									</div>
+									<div class="col-md-4">
+										<div class="preference-card">
+											<input
+												type="radio"
+												class="btn-check"
+												name="body_preference"
+												id="body_full"
+												value="FULL"
+											/>
+											<label class="wine-card" for="body_full">
+												<div class="wine-card-content">
+													<div class="wine-card-icon">
+														<i class="fas fa-wine-glass-alt"></i>
+													</div>
+													<h5 class="wine-card-title">Full</h5>
+													<p class="wine-card-description">
+														Rich and powerful, like Cabernet Sauvignon
+													</p>
+												</div>
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Sweetness Level -->
+							<div class="preference-section mb-5">
+								<div class="section-header mb-4">
+									<h4 class="section-title">
+										<i class="fas fa-candy-cane me-2"></i>Sweetness Level
+									</h4>
+									<p class="section-subtitle">
+										What's your preferred sweetness in wine?
+									</p>
+								</div>
+								<div class="row g-4">
+									<div class="col-md-4">
+										<div class="preference-card">
+											<input
+												type="radio"
+												class="btn-check"
+												name="sweetness_level"
+												id="sweetness_dry"
+												value="DRY"
+												checked
+											/>
+											<label class="wine-card" for="sweetness_dry">
+												<div class="wine-card-content">
+													<div class="wine-card-icon">
+														<i class="fas fa-wine-glass-empty"></i>
+													</div>
+													<h5 class="wine-card-title">Dry</h5>
+													<p class="wine-card-description">
+														No sweetness, like Sauvignon Blanc
+													</p>
+												</div>
+											</label>
+										</div>
+									</div>
+									<div class="col-md-4">
+										<div class="preference-card">
+											<input
+												type="radio"
+												class="btn-check"
+												name="sweetness_level"
+												id="sweetness_off_dry"
+												value="OFF_DRY"
+											/>
+											<label class="wine-card" for="sweetness_off_dry">
+												<div class="wine-card-content">
+													<div class="wine-card-icon">
+														<i class="fas fa-tint"></i>
+													</div>
+													<h5 class="wine-card-title">Off-Dry</h5>
+													<p class="wine-card-description">
+														Slightly sweet, like Riesling
+													</p>
+												</div>
+											</label>
+										</div>
+									</div>
+									<div class="col-md-4">
+										<div class="preference-card">
+											<input
+												type="radio"
+												class="btn-check"
+												name="sweetness_level"
+												id="sweetness_sweet"
+												value="SWEET"
+											/>
+											<label class="wine-card" for="sweetness_sweet">
+												<div class="wine-card-content">
+													<div class="wine-card-icon">
+														<i class="fas fa-honey-pot"></i>
+													</div>
+													<h5 class="wine-card-title">Sweet</h5>
+													<p class="wine-card-description">
+														Noticeably sweet, like Port
+													</p>
+												</div>
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Budget Preferences -->
+							<div class="preference-section">
+								<div class="section-header mb-4">
+									<h4 class="section-title">
+										<i class="fas fa-dollar-sign me-2"></i>Budget Preferences
+									</h4>
+									<p class="section-subtitle">
+										Set your typical spending range for wines
+									</p>
+								</div>
+								<div class="preference-card">
+									<!-- Regular Budget Range -->
+									<div class="budget-range-section mb-4">
+										<div
+											class="d-flex justify-content-between align-items-center mb-3"
+										>
+											<h5 class="range-title mb-0">Regular Purchase Range</h5>
+											<div class="price-display">
+												<span id="regular_budget_min_display">$15</span> -
+												<span id="regular_budget_max_display">$50</span>
+											</div>
+										</div>
+										<div class="range-slider-container">
+											<div class="range-slider wine-themed">
+												<input
+													type="range"
+													class="range-slider__range"
+													id="regular_budget_min"
+													name="regular_budget_min"
+													min="10"
+													max="100"
+													value="15"
+													step="5"
+												/>
+												<input
+													type="range"
+													class="range-slider__range"
+													id="regular_budget_max"
+													name="regular_budget_max"
+													min="10"
+													max="100"
+													value="50"
+													step="5"
+												/>
+												<div class="range-slider__track"></div>
+												<div class="range-slider__range-highlight"></div>
+											</div>
+											<div
+												class="range-limits d-flex justify-content-between mt-2"
+											>
+												<small class="text-muted">$10</small>
+												<small class="text-muted">$100</small>
+											</div>
+										</div>
+									</div>
+
+									<!-- Special Occasion Budget Range -->
+									<div class="budget-range-section">
+										<div
+											class="d-flex justify-content-between align-items-center mb-3"
+										>
+											<h5 class="range-title mb-0">Special Occasion Range</h5>
+											<div class="price-display">
+												<span id="special_budget_min_display">$50</span> -
+												<span id="special_budget_max_display">$200</span>
+											</div>
+										</div>
+										<div class="range-slider-container">
+											<div class="range-slider wine-themed">
+												<input
+													type="range"
+													class="range-slider__range"
+													id="special_budget_min"
+													name="special_budget_min"
+													min="25"
+													max="500"
+													value="50"
+													step="25"
+												/>
+												<input
+													type="range"
+													class="range-slider__range"
+													id="special_budget_max"
+													name="special_budget_max"
+													min="25"
+													max="500"
+													value="200"
+													step="25"
+												/>
+												<div class="range-slider__track"></div>
+												<div class="range-slider__range-highlight"></div>
+											</div>
+											<div
+												class="range-limits d-flex justify-content-between mt-2"
+											>
+												<small class="text-muted">$25</small>
+												<small class="text-muted">$500</small>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Step 4: Wine Characteristics -->
+						<div class="form-step d-none" data-step="4">
+							<h3 class="step-title">Wine Characteristics</h3>
+							<p class="text-muted mb-4">
+								Select the traits you enjoy in wines
+							</p>
+
+							<div class="preference-card">
+								<div class="trait-categories">
+									{% for category, traits in trait_categories.items() %}
+									<div class="trait-category-section mb-4">
+										<h5 class="trait-category-title">
+											<i
+												class="fas {% if category == 'taste' %}fa-tongue{% elif category == 'aroma' %}fa-nose{% elif category == 'body' %}fa-wine-bottle{% elif category == 'character' %}fa-star{% else %}fa-leaf{% endif %} me-2"
+											></i>
+											{{ category | title }}
+										</h5>
+										<div class="trait-grid">
+											{% for trait in traits %}
+											<label class="trait-checkbox">
+												<input
+													type="checkbox"
+													name="wine_traits[]"
+													value="{{ trait }}"
+												/>
+												<span class="trait-label">
+													<i class="fas fa-{{ get_trait_icon(trait) }}"></i>
+													<span>{{ trait | replace('_', ' ') | title }}</span>
+												</span>
+											</label>
+											{% endfor %}
+										</div>
+									</div>
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+
+						<!-- Step 5: Wine Regions -->
+						<div class="form-step d-none" data-step="5">
+							<h3 class="step-title">Your Preferred Wine Regions</h3>
+							<p class="text-muted mb-4">
+								Select up to 5 regions that interest you most
+							</p>
+
+							<div class="preference-card">
+								<!-- Old World Regions -->
+								<div class="region-category mb-4">
+									<h4 class="region-category-title">
+										<i class="fas fa-landmark me-2"></i>Old World Regions
+									</h4>
+									<div class="region-grid">
+										{% for region in wine_regions if region.value in
+										['bordeaux', 'burgundy', 'champagne', 'rhone', 'loire',
+										'provence', 'tuscany', 'piedmont', 'veneto', 'sicily',
+										'rioja', 'ribera_del_duero', 'priorat', 'mosel', 'douro'] %}
+										<label class="region-checkbox">
+											<input
+												type="checkbox"
+												name="wine_regions"
+												value="{{ region.value }}"
+												onchange="checkRegionLimit(this)"
+											/>
+											<span class="region-label">
+												<span class="region-icon">
+													{% if region.value in ['bordeaux', 'burgundy',
+													'champagne', 'rhone', 'loire', 'provence'] %} 🇫🇷 {%
+													elif region.value in ['tuscany', 'piedmont', 'veneto',
+													'sicily'] %} 🇮🇹 {% elif region.value in ['rioja',
+													'ribera_del_duero', 'priorat'] %} 🇪🇸 {% elif
+													region.value == 'mosel' %} 🇩🇪 {% elif region.value ==
+													'douro' %} 🇵🇹 {% endif %}
+												</span>
+												<span class="region-content">
+													<span class="region-name"
+														>{{ region.value | replace('_', ' ') | title
+														}}</span
+													>
+													<span class="region-description">
+														{% if region.value == 'bordeaux' %} Full-bodied reds
+														{% elif region.value == 'burgundy' %} Elegant Pinot
+														Noir {% elif region.value == 'champagne' %}
+														Sparkling wines {% elif region.value == 'rhone' %}
+														Rich, spicy reds {% elif region.value == 'loire' %}
+														Crisp whites {% elif region.value == 'provence' %}
+														Classic rosés {% elif region.value == 'tuscany' %}
+														Chianti & Super Tuscans {% elif region.value ==
+														'piedmont' %} Barolo & Barbaresco {% elif
+														region.value == 'veneto' %} Amarone & Prosecco {%
+														elif region.value == 'sicily' %} Mediterranean wines
+														{% elif region.value == 'rioja' %} Traditional
+														Spanish reds {% elif region.value ==
+														'ribera_del_duero' %} Bold Spanish reds {% elif
+														region.value == 'priorat' %} Powerful reds {% elif
+														region.value == 'mosel' %} Sweet Rieslings {% elif
+														region.value == 'douro' %} Port wines {% endif %}
+													</span>
+												</span>
+											</span>
+										</label>
+										{% endfor %}
+									</div>
+								</div>
+
+								<!-- New World Regions -->
+								<div class="region-category">
+									<h4 class="region-category-title">
+										<i class="fas fa-globe-americas me-2"></i>New World Regions
+									</h4>
+									<div class="region-grid">
+										{% for region in wine_regions if region.value in
+										['napa_valley', 'sonoma', 'oregon', 'washington', 'barossa',
+										'marlborough', 'mendoza', 'stellenbosch', 'casablanca'] %}
+										<label class="region-checkbox">
+											<input
+												type="checkbox"
+												name="wine_regions"
+												value="{{ region.value }}"
+												onchange="checkRegionLimit(this)"
+											/>
+											<span class="region-label">
+												<span class="region-icon">
+													{% if region.value in ['napa_valley', 'sonoma',
+													'oregon', 'washington'] %} 🇺🇸 {% elif region.value ==
+													'barossa' %} 🇦🇺 {% elif region.value == 'marlborough'
+													%} 🇳🇿 {% elif region.value == 'mendoza' %} 🇦🇷 {% elif
+													region.value == 'stellenbosch' %} 🇿🇦 {% elif
+													region.value == 'casablanca' %} 🇨🇱 {% endif %}
+												</span>
+												<span class="region-content">
+													<span class="region-name"
+														>{{ region.value | replace('_', ' ') | title
+														}}</span
+													>
+													<span class="region-description">
+														{% if region.value == 'napa_valley' %} Premium
+														Cabernet {% elif region.value == 'sonoma' %} Diverse
+														varietals {% elif region.value == 'oregon' %} Pinot
+														Noir {% elif region.value == 'washington' %} Bold
+														reds {% elif region.value == 'barossa' %} Rich
+														Shiraz {% elif region.value == 'marlborough' %}
+														Sauvignon Blanc {% elif region.value == 'mendoza' %}
+														Malbec {% elif region.value == 'stellenbosch' %}
+														South African reds {% elif region.value ==
+														'casablanca' %} Chilean whites {% endif %}
+													</span>
+												</span>
+											</span>
+										</label>
+										{% endfor %}
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Step 6: Review -->
+						<div class="form-step d-none" data-step="6">
+							<h3 class="step-title">Review Your Preferences</h3>
+							<div class="review-section">
+								<!-- Account Information -->
+								<div class="review-card mb-4">
+									<div class="review-header">
+										<h4 class="review-subtitle">
+											<i class="fas fa-user-circle me-2"></i>Account Information
+										</h4>
+									</div>
+									<div class="review-content">
+										<div class="row">
+											<div class="col-md-6">
+												<p>
+													<strong>Name:</strong> <span id="review_name"></span>
+												</p>
+											</div>
+											<div class="col-md-6">
+												<p>
+													<strong>Email:</strong>
+													<span id="review_email"></span>
+												</p>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Wine Experience -->
+								<div class="review-card mb-4">
+									<div class="review-header">
+										<h4 class="review-subtitle">
+											<i class="fas fa-glass-cheers me-2"></i>Wine Experience
+										</h4>
+									</div>
+									<div class="review-content">
+										<div class="row">
+											<div class="col-md-6">
+												<p>
+													<strong>Experience Level:</strong>
+													<span id="review_experience"></span>
+												</p>
+												<p>
+													<strong>Drinking Frequency:</strong>
+													<span id="review_frequency"></span>
+												</p>
+											</div>
+											<div class="col-md-6">
+												<p><strong>Preferred Wine Types:</strong></p>
+												<div
+													class="wine-types-tags"
+													id="review_wine_types_container"
+												></div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Taste Profile -->
+								<div class="review-card mb-4">
+									<div class="review-header">
+										<h4 class="review-subtitle">
+											<i class="fas fa-wine-glass-alt me-2"></i>Taste Profile
+										</h4>
+									</div>
+									<div class="review-content">
+										<div class="row">
+											<div class="col-md-6">
+												<p>
+													<strong>Body Preference:</strong>
+													<span id="review_body"></span>
+												</p>
+												<p>
+													<strong>Sweetness Level:</strong>
+													<span id="review_sweetness"></span>
+												</p>
+											</div>
+											<div class="col-md-6">
+												<p><strong>Preferred Regions:</strong></p>
+												<div
+													class="region-tags"
+													id="review_regions_container"
+												></div>
+											</div>
+										</div>
+										<div class="row mt-3">
+											<div class="col-md-6">
+												<p>
+													<strong>Regular Budget:</strong> $<span
+														id="review_regular_budget"
+													></span>
+												</p>
+											</div>
+											<div class="col-md-6">
+												<p>
+													<strong>Special Occasion Budget:</strong> $<span
+														id="review_special_budget"
+													></span>
+												</p>
+											</div>
+										</div>
+										<div class="row mt-3">
+											<div class="col-12">
+												<p><strong>Preferred Traits:</strong></p>
+												<div
+													class="trait-tags"
+													id="review_traits_container"
+												></div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Terms Agreement -->
+								<div class="form-check mb-4 terms-check">
+									<input
+										class="form-check-input"
+										type="checkbox"
+										id="terms"
+										name="terms"
+										required
+									/>
+									<label class="form-check-label" for="terms">
+										I agree to the
+										<a href="#" class="text-decoration-none"
+											>Terms of Service</a
+										>
+										and
+										<a href="#" class="text-decoration-none">Privacy Policy</a>
+									</label>
+								</div>
+							</div>
+						</div>
+
+						<!-- Navigation Buttons -->
+						<div class="form-navigation mt-4">
+							<button
+								type="button"
+								class="btn btn-secondary"
+								id="prevBtn"
+								style="display: none"
+							>
+								<i class="fas fa-arrow-left me-2"></i>Previous
+							</button>
+							<button type="button" class="btn btn-primary" id="nextBtn">
+								<i class="fas fa-arrow-right ms-2"></i>Next
+							</button>
+							<button
+								type="submit"
+								class="btn btn-primary"
+								id="submitBtn"
+								style="display: none"
+							>
+								<i class="fas fa-check me-2"></i>Create Account
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %} {% block extra_css %}
+<style>
+	.auth-section {
+		min-height: 100vh;
+		padding: 120px 0 60px;
+		background: linear-gradient(
+			135deg,
+			rgba(139, 0, 0, 0.05) 0%,
+			rgba(114, 47, 55, 0.05) 100%
+		);
+		display: flex;
+		align-items: center;
+	}
+
+	.auth-card {
+		background: #fff;
+		border-radius: 24px;
+		padding: 3rem;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+	}
+
+	.auth-header {
+		margin-bottom: 2.5rem;
+	}
+
+	.auth-logo {
+		width: 64px;
+		height: 64px;
+		margin-bottom: 1.5rem;
+	}
+
+	.auth-header h1 {
+		font-size: 2rem;
+		font-weight: 700;
+		color: var(--text-primary);
+		margin-bottom: 0.5rem;
+	}
+
+	.auth-subtitle {
+		color: var(--text-secondary);
+		font-size: 1rem;
+	}
+
+	.auth-form .form-floating {
+		position: relative;
+	}
+
+	.auth-form .form-control {
+		height: 56px;
+		padding: 1rem 1.25rem;
+		font-size: 1rem;
+		border-radius: 12px;
+		border: 2px solid rgba(0, 0, 0, 0.1);
+		transition: all 0.3s ease;
+	}
+
+	.auth-form .form-control:focus {
+		border-color: #722f37;
+		box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+	}
+
+	.auth-form .form-floating label {
+		padding: 1rem 1.25rem;
+	}
+
+	.password-field {
+		position: relative;
+	}
+
+	.password-toggle {
+		position: absolute;
+		right: 12px;
+		top: 12px;
+		background: none;
+		border: none;
+		padding: 0.5rem;
+		color: var(--text-secondary);
+		opacity: 0.7;
+		transition: opacity 0.3s ease;
+		z-index: 10;
+	}
+
+	.password-toggle:hover {
+		opacity: 1;
+		color: #722f37;
+	}
+
+	.password-strength {
+		background: #fff;
+		border-radius: 8px;
+		padding: 1rem;
+		margin-top: 0.5rem;
+	}
+
+	.password-strength .progress {
+		background-color: rgba(0, 0, 0, 0.1);
+		border-radius: 2px;
+		overflow: hidden;
+	}
+
+	.password-strength .progress-bar {
+		background-color: #722f37;
+		transition: width 0.3s ease;
+	}
+
+	.requirements {
+		color: var(--text-secondary);
+	}
+
+	.requirement {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.requirement i {
+		font-size: 0.8rem;
+		opacity: 0.5;
+		transition: all 0.3s ease;
+	}
+
+	.requirement.valid {
+		color: #28a745;
+	}
+
+	.requirement.valid i {
+		opacity: 1;
+	}
+
+	.requirement.valid i::before {
+		content: "\f058";
+	}
+
+	.auth-form .form-check {
+		padding-left: 1.8rem;
+	}
+
+	.auth-form .form-check-input {
+		width: 1.2em;
+		height: 1.2em;
+		margin-left: -1.8rem;
+		background-color: #fff;
+		border: 2px solid rgba(0, 0, 0, 0.2);
+		border-radius: 4px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.auth-form .form-check-input:checked {
+		background-color: #722f37;
+		border-color: #722f37;
+	}
+
+	.auth-form .form-check-label {
+		color: var(--text-secondary);
+		cursor: pointer;
+	}
+
+	.auth-form .form-check-label a {
+		color: #722f37;
+		font-weight: 500;
+	}
+
+	.auth-form .form-check-label a:hover {
+		color: #8b4513;
+	}
+
+	.btn-primary {
+		height: 56px;
+		font-size: 1.1rem;
+		font-weight: 600;
+		border-radius: 12px;
+		background: #722f37;
+		border: none;
+		transition: all 0.3s ease;
+	}
+
+	.btn-primary:hover,
+	.btn-primary:focus {
+		background: #8b4513;
+		transform: translateY(-2px);
+		box-shadow: 0 8px 20px rgba(114, 47, 55, 0.2);
+	}
+
+	.auth-divider {
+		text-align: center;
+		position: relative;
+		margin: 2rem 0;
+	}
+
+	.auth-divider::before,
+	.auth-divider::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		width: calc(50% - 70px);
+		height: 1px;
+		background-color: rgba(0, 0, 0, 0.1);
+	}
+
+	.auth-divider::before {
+		left: 0;
+	}
+
+	.auth-divider::after {
+		right: 0;
+	}
+
+	.auth-divider span {
+		background: #fff;
+		padding: 0 1rem;
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+	}
+
+	.social-login {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.social-btn {
+		height: 48px;
+		border-radius: 12px;
+		font-size: 0.95rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		transition: all 0.3s ease;
+		border: 2px solid rgba(0, 0, 0, 0.1);
+	}
+
+	.social-btn:hover {
+		background-color: rgba(114, 47, 55, 0.05);
+		border-color: #722f37;
+	}
+
+	.social-btn i {
+		font-size: 1.1rem;
+	}
+
+	.signup-link {
+		color: #722f37;
+		text-decoration: none;
+		font-weight: 600;
+		transition: color 0.3s ease;
+	}
+
+	.signup-link:hover {
+		color: #8b4513;
+		text-decoration: underline;
+	}
+
+	@media (max-width: 767.98px) {
+		.auth-section {
+			padding: 80px 0 40px;
+		}
+
+		.auth-card {
+			padding: 2rem;
+			margin: 0 1rem;
+			border-radius: 16px;
+		}
+
+		.auth-header h1 {
+			font-size: 1.75rem;
+		}
+
+		.social-login {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	/* Stepper styles */
+	.signup-stepper {
+		margin-bottom: 2rem;
+	}
+
+	.stepper-progress {
+		height: 4px;
+		background: rgba(114, 47, 55, 0.1);
+		border-radius: 2px;
+		margin-bottom: 1.5rem;
+		position: relative;
+	}
+
+	.stepper-progress .progress-bar {
+		height: 100%;
+		background: #722f37;
+		border-radius: 2px;
+		transition: width 0.3s ease;
+	}
+
+	.stepper-steps {
+		display: flex;
+		justify-content: space-between;
+		position: relative;
+	}
+
+	.step {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		position: relative;
+		z-index: 1;
+	}
+
+	.step-number {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		background: #fff;
+		border: 2px solid rgba(114, 47, 55, 0.2);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		color: rgba(114, 47, 55, 0.5);
+		margin-bottom: 0.5rem;
+		transition: all 0.3s ease;
+	}
+
+	.step.active .step-number {
+		background: #722f37;
+		border-color: #722f37;
+		color: #fff;
+	}
+
+	.step.completed .step-number {
+		background: #28a745;
+		border-color: #28a745;
+		color: #fff;
+	}
+
+	.step-label {
+		font-size: 0.85rem;
+		color: rgba(0, 0, 0, 0.5);
+		font-weight: 500;
+	}
+
+	.step.active .step-label {
+		color: #722f37;
+	}
+
+	/* Form step styles */
+	.form-step {
+		transition: all 0.3s ease;
+		display: block;
+	}
+
+	.form-step.d-none {
+		display: none !important;
+	}
+
+	.step-title {
+		color: #722f37;
+		font-size: 1.75rem;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+	}
+
+	/* Custom radio and checkbox cards */
+	.custom-radio-card,
+	.custom-checkbox-card {
+		margin-bottom: 1rem;
+	}
+
+	.custom-radio-card label,
+	.custom-checkbox-card label {
+		display: block;
+		padding: 1.25rem;
+		border: 2px solid rgba(114, 47, 55, 0.1);
+		border-radius: 12px;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.custom-radio-card input:checked + label,
+	.custom-checkbox-card input:checked + label {
+		border-color: #722f37;
+		background: rgba(114, 47, 55, 0.05);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(114, 47, 55, 0.1);
+	}
+
+	.radio-content,
+	.checkbox-content {
+		text-align: center;
+	}
+
+	.radio-content i,
+	.checkbox-content i {
+		font-size: 2rem;
+		margin-bottom: 0.75rem;
+		color: #722f37;
+		transition: all 0.3s ease;
+	}
+
+	.radio-content .radio-title,
+	.checkbox-content .checkbox-title {
+		display: block;
+		font-weight: 600;
+		font-size: 1.1rem;
+		margin-bottom: 0.5rem;
+		color: #4a1f24;
+	}
+
+	.radio-content small,
+	.checkbox-content small {
+		display: block;
+		color: rgba(0, 0, 0, 0.5);
+		font-size: 0.9rem;
+	}
+
+	.custom-radio-card:hover label,
+	.custom-checkbox-card:hover label {
+		border-color: #722f37;
+		transform: translateY(-2px);
+	}
+
+	.text-pink {
+		color: #ff69b4;
+	}
+	.text-brown {
+		color: #8b4513;
+	}
+
+	/* Responsive adjustments */
+	@media (max-width: 767.98px) {
+		.radio-content i,
+		.checkbox-content i {
+			font-size: 1.5rem;
+		}
+
+		.radio-content .radio-title,
+		.checkbox-content .checkbox-title {
+			font-size: 1rem;
+		}
+
+		.radio-content small,
+		.checkbox-content small {
+			font-size: 0.8rem;
+		}
+	}
+
+	/* Range slider styles */
+	.price-range {
+		padding: 0 1rem;
+	}
+
+	.price-labels {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 0.5rem;
+		color: rgba(0, 0, 0, 0.5);
+		font-size: 0.9rem;
+	}
+
+	.preference-slider {
+		margin-bottom: 1.5rem;
+	}
+
+	.preference-slider label {
+		display: block;
+		margin-bottom: 0.5rem;
+		font-weight: 500;
+	}
+
+	.range-labels {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 0.25rem;
+		font-size: 0.85rem;
+		color: rgba(0, 0, 0, 0.5);
+	}
+
+	/* Form navigation */
+	.form-navigation {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 2rem;
+		padding-top: 1rem;
+		border-top: 1px solid rgba(114, 47, 55, 0.1);
+	}
+
+	.form-navigation button {
+		min-width: 140px;
+		height: 48px;
+		font-weight: 500;
+		transition: all 0.3s ease;
+	}
+
+	.form-navigation button:not(:first-child) {
+		margin-left: 1rem;
+	}
+
+	.form-navigation .btn-outline-primary {
+		border-color: #722f37;
+		color: #722f37;
+	}
+
+	.form-navigation .btn-outline-primary:hover {
+		background-color: #722f37;
+		color: white;
+	}
+
+	.form-navigation .btn-primary {
+		background-color: #722f37;
+		border-color: #722f37;
+	}
+
+	.form-navigation .btn-primary:hover {
+		background-color: #8b4513;
+		border-color: #8b4513;
+	}
+
+	@media (max-width: 576px) {
+		.form-navigation {
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.form-navigation button {
+			width: 100%;
+			margin-left: 0 !important;
+		}
+	}
+
+	/* Add new styles for review section */
+	.review-card {
+		background: #fff;
+		border-radius: 12px;
+		padding: 1.5rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		border: 1px solid rgba(114, 47, 55, 0.1);
+		margin-bottom: 1.5rem;
+	}
+
+	.review-subtitle {
+		color: #722f37;
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+	}
+
+	.review-content p {
+		margin-bottom: 0.5rem;
+	}
+
+	.review-content strong {
+		color: #4a1f24;
+	}
+
+	.section-subtitle {
+		color: #722f37;
+		font-size: 1.2rem;
+		font-weight: 600;
+	}
+
+	/* Enhanced range slider styles */
+	.range-slider {
+		position: relative;
+		padding: 0 1rem;
+	}
+
+	.range-value {
+		position: absolute;
+		top: -30px;
+		left: 50%;
+		transform: translateX(-50%);
+		background: #722f37;
+		color: white;
+		padding: 2px 8px;
+		border-radius: 4px;
+		font-size: 0.9rem;
+	}
+
+	.form-range {
+		height: 6px;
+		border-radius: 3px;
+	}
+
+	.form-range::-webkit-slider-thumb {
+		background: #722f37;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.form-range::-webkit-slider-thumb:hover {
+		transform: scale(1.1);
+	}
+
+	/* Region styles */
+	.region-flag {
+		width: 24px;
+		height: 16px;
+		margin-right: 8px;
+		border-radius: 2px;
+	}
+
+	.region-category-title {
+		color: #722f37;
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 2px solid rgba(114, 47, 55, 0.1);
+	}
+
+	/* Review section enhancements */
+	.review-card {
+		background: white;
+		border-radius: 16px;
+		padding: 1.5rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+		border: 1px solid rgba(114, 47, 55, 0.1);
+		margin-bottom: 1.5rem;
+	}
+
+	.review-header {
+		margin-bottom: 1rem;
+	}
+
+	.review-subtitle {
+		color: #722f37;
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin: 0;
+	}
+
+	.wine-types-tags,
+	.region-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.tag {
+		background: rgba(114, 47, 55, 0.1);
+		color: #722f37;
+		padding: 0.5rem 1rem;
+		border-radius: 20px;
+		font-size: 0.9rem;
+		font-weight: 500;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0.25rem;
+	}
+
+	.tag i {
+		color: #722f37;
+	}
+
+	.preference-section {
+		background: rgba(114, 47, 55, 0.03);
+		border-radius: 12px;
+		padding: 1.5rem;
+		height: 100%;
+	}
+
+	.custom-radio-card label,
+	.custom-checkbox-card label {
+		padding: 0.75rem;
+	}
+
+	.wine-regions-container .row {
+		max-height: 400px;
+		overflow-y: auto;
+		padding-right: 10px;
+	}
+
+	.region-category {
+		background: rgba(114, 47, 55, 0.03);
+		border-radius: 12px;
+		padding: 1.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.price-range-container {
+		background: rgba(114, 47, 55, 0.03);
+		border-radius: 12px;
+		padding: 1.5rem;
+		height: 100%;
+	}
+
+	.custom-checkbox-card {
+		margin-bottom: 0.5rem;
+	}
+
+	.custom-checkbox-card label {
+		padding: 0.75rem;
+		height: 100%;
+	}
+
+	.checkbox-content {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.checkbox-content small {
+		font-size: 0.75rem;
+		opacity: 0.7;
+	}
+
+	.wine-regions-container .row {
+		max-height: 600px;
+		overflow-y: auto;
+		margin-right: -0.5rem;
+		padding-right: 0.5rem;
+	}
+
+	.region-category {
+		background: rgba(114, 47, 55, 0.03);
+		border-radius: 12px;
+		padding: 1.25rem;
+		margin-bottom: 1rem;
+	}
+
+	.region-category-title {
+		color: #722f37;
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 2px solid rgba(114, 47, 55, 0.1);
+	}
+
+	.country-flag {
+		font-size: 1.2rem;
+	}
+
+	/* Wine Traits Styles */
+	.trait-categories {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.trait-category-section {
+		background: #fff;
+		border-radius: 12px;
+		padding: 1.5rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	}
+
+	.trait-category-title {
+		color: #722f37;
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 2px solid rgba(114, 47, 55, 0.1);
+		display: flex;
+		align-items: center;
+	}
+
+	.trait-grid {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.trait-checkbox {
+		flex: 0 1 calc(33.333% - 0.75rem);
+		min-width: 150px;
+		cursor: pointer;
+		user-select: none;
+	}
+
+	@media (max-width: 768px) {
+		.trait-checkbox {
+			flex: 0 1 calc(50% - 0.75rem);
+		}
+	}
+
+	@media (max-width: 480px) {
+		.trait-checkbox {
+			flex: 1 1 100%;
+		}
+	}
+
+	.trait-checkbox input {
+		display: none;
+	}
+
+	.trait-label {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1rem;
+		border-radius: 8px;
+		background: rgba(114, 47, 55, 0.05);
+		border: 1px solid rgba(114, 47, 55, 0.1);
+		transition: all 0.2s ease;
+		height: 100%;
+	}
+
+	.trait-label i {
+		color: #722f37;
+		font-size: 1rem;
+		width: 20px;
+		text-align: center;
+	}
+
+	.trait-checkbox input:checked + .trait-label {
+		background: #722f37;
+		color: white;
+		border-color: #722f37;
+	}
+
+	.trait-checkbox input:checked + .trait-label i {
+		color: white;
+	}
+
+	.trait-label:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 2px 8px rgba(114, 47, 55, 0.15);
+		border-color: #722f37;
+	}
+
+	/* Price Range Section */
+	.price-slider {
+		padding: 1rem;
+		background: rgba(114, 47, 55, 0.05);
+		border-radius: 12px;
+		margin-bottom: 1rem;
+	}
+
+	.custom-range {
+		height: 6px;
+		border-radius: 3px;
+		background: rgba(114, 47, 55, 0.1);
+	}
+
+	.custom-range::-webkit-slider-thumb {
+		background: #722f37;
+		width: 18px;
+		height: 18px;
+		border-radius: 50%;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.custom-range::-webkit-slider-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.2);
+	}
+
+	.price-value {
+		font-weight: 600;
+		color: #722f37;
+	}
+
+	/* Step Title and Subtitle */
+	.step-title {
+		color: #722f37;
+		font-size: 1.75rem;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+	}
+
+	.text-muted {
+		color: rgba(114, 47, 55, 0.7) !important;
+	}
+
+	/* Category Headers */
+	.card-subtitle {
+		color: #722f37;
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.card-subtitle i {
+		opacity: 0.8;
+	}
+
+	/* Preference Cards */
+	.preference-card {
+		background: #fff;
+		border-radius: 12px;
+		padding: 1.5rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		border: 1px solid rgba(114, 47, 55, 0.1);
+		margin-bottom: 1.5rem;
+	}
+
+	.preference-card:hover {
+		border-color: #722f37;
+		box-shadow: 0 4px 12px rgba(114, 47, 55, 0.1);
+	}
+
+	/* Navigation Buttons */
+	.btn-primary {
+		background-color: #722f37;
+		border-color: #722f37;
+	}
+
+	.btn-primary:hover,
+	.btn-primary:focus {
+		background-color: #8b4513;
+		border-color: #8b4513;
+	}
+
+	.btn-outline-primary {
+		color: #722f37;
+		border-color: #722f37;
+	}
+
+	.btn-outline-primary:hover {
+		background-color: #722f37;
+		border-color: #722f37;
+		color: white;
+	}
+
+	/* Progress Bar */
+	.progress-bar {
+		background-color: #722f37 !important;
+	}
+
+	/* Step Indicators */
+	.step.active .step-number {
+		background-color: #722f37;
+		border-color: #722f37;
+	}
+
+	.step.completed .step-number {
+		background-color: #8b4513;
+		border-color: #8b4513;
+	}
+
+	/* Form Validation */
+	.form-control:focus {
+		border-color: #722f37;
+		box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+	}
+
+	.is-invalid {
+		border-color: #dc3545;
+	}
+
+	.is-invalid:focus {
+		border-color: #dc3545;
+		box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+	}
+
+	/* Review Section */
+	.review-card {
+		background: #fff;
+		border-radius: 12px;
+		padding: 1.5rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		border: 1px solid rgba(114, 47, 55, 0.1);
+		margin-bottom: 1.5rem;
+	}
+
+	.tag {
+		background: rgba(114, 47, 55, 0.1);
+		color: #722f37;
+		padding: 0.5rem 1rem;
+		border-radius: 20px;
+		font-size: 0.9rem;
+		font-weight: 500;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0.25rem;
+	}
+
+	.tag i {
+		color: #722f37;
+	}
+
+	/* Responsive Adjustments */
+	@media (max-width: 768px) {
+		.preference-card {
+			padding: 1rem;
+		}
+
+		.trait-category-section {
+			padding: 1rem;
+		}
+
+		.step-title {
+			font-size: 1.5rem;
+		}
+
+		.card-subtitle {
+			font-size: 1.1rem;
+		}
+	}
+
+	.region-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.region-checkbox {
+		position: relative;
+		cursor: pointer;
+	}
+
+	.region-checkbox input {
+		display: none;
+	}
+
+	.region-label {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem;
+		background: white;
+		border: 1px solid rgba(114, 47, 55, 0.1);
+		border-radius: 12px;
+		transition: all 0.3s ease;
+	}
+
+	.region-icon {
+		font-size: 1.5rem;
+		min-width: 2rem;
+		text-align: center;
+	}
+
+	.region-content {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.region-name {
+		font-weight: 600;
+		color: #722f37;
+	}
+
+	.region-description {
+		font-size: 0.85rem;
+		color: rgba(114, 47, 55, 0.7);
+	}
+
+	.region-checkbox input:checked + .region-label {
+		background: rgba(114, 47, 55, 0.05);
+		border-color: #722f37;
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(114, 47, 55, 0.1);
+	}
+
+	.region-label:hover {
+		border-color: #722f37;
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(114, 47, 55, 0.1);
+	}
+
+	.region-category-title {
+		color: #722f37;
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 2px solid rgba(114, 47, 55, 0.1);
+		display: flex;
+		align-items: center;
+	}
+
+	/* Wine Theme Colors */
+	:root {
+		--wine-primary: #722f37;
+		--wine-secondary: #a4343a;
+		--wine-light: #f8f1f2;
+		--wine-dark: #451a1d;
+		--wine-accent: #d4a5a8;
+		--wine-red: #98242c;
+		--wine-white: #8b4513;
+		--wine-rose: #d4767f;
+		--wine-sparkling: #8b4513;
+		--wine-dessert: #8b4513;
+	}
+
+	/* Step Header Styles */
+	.step-header {
+		padding-bottom: 2rem;
+		border-bottom: 2px solid var(--wine-light);
+		margin-bottom: 3rem;
+	}
+
+	.step-title {
+		color: var(--wine-primary);
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin-bottom: 1rem;
+	}
+
+	.step-description {
+		color: var(--wine-dark);
+		font-size: 1.1rem;
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	/* Section Styles */
+	.section-header {
+		margin-bottom: 2rem;
+	}
+
+	.section-title {
+		color: var(--wine-primary);
+		font-size: 1.5rem;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+		display: flex;
+		align-items: center;
+	}
+
+	.section-subtitle {
+		color: var(--wine-dark);
+		font-size: 1.1rem;
+		opacity: 0.8;
+	}
+
+	/* Wine Card Styles */
+	.wine-card {
+		display: block;
+		background: white;
+		border: 2px solid var(--wine-light);
+		border-radius: 16px;
+		padding: 2rem 1.5rem;
+		height: 100%;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		text-align: center;
+	}
+
+	.wine-card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 8px 24px rgba(114, 47, 55, 0.15);
+		border-color: var(--wine-primary);
+	}
+
+	.wine-card-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.wine-card-icon {
+		width: 64px;
+		height: 64px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--wine-light);
+		border-radius: 50%;
+		margin-bottom: 1rem;
+		transition: all 0.3s ease;
+	}
+
+	.wine-card-icon i {
+		font-size: 1.75rem;
+		color: var(--wine-primary);
+		transition: all 0.3s ease;
+	}
+
+	.wine-card-title {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: var(--wine-primary);
+		margin: 0;
+	}
+
+	.wine-card-description {
+		font-size: 0.95rem;
+		color: var(--wine-dark);
+		opacity: 0.8;
+		margin: 0;
+		line-height: 1.5;
+	}
+
+	/* Wine Type Specific Icons */
+	.wine-type-icon-red {
+		background: rgba(152, 36, 44, 0.1);
+	}
+
+	.wine-type-icon-red i {
+		color: var(--wine-red);
+	}
+
+	.wine-type-icon-white {
+		background: rgba(139, 69, 19, 0.1);
+	}
+
+	.wine-type-icon-white i {
+		color: var(--wine-primary);
+	}
+
+	.wine-type-icon-rose {
+		background: rgba(212, 118, 127, 0.1);
+	}
+
+	.wine-type-icon-rose i {
+		color: var(--wine-rose);
+	}
+
+	.wine-type-icon-sparkling {
+		background: rgba(139, 69, 19, 0.1);
+	}
+
+	.wine-type-icon-sparkling i {
+		color: var(--wine-primary);
+	}
+
+	.wine-type-icon-dessert {
+		background: rgba(139, 69, 19, 0.1);
+	}
+
+	.wine-type-icon-dessert i {
+		color: var(--wine-primary);
+	}
+
+	/* Selected State with Enhanced Icon Visibility */
+	input:checked + .wine-card {
+		background: var(--wine-light);
+		border-color: var(--wine-primary);
+		transform: translateY(-4px);
+		box-shadow: 0 8px 24px rgba(114, 47, 55, 0.15);
+	}
+
+	input:checked + .wine-card .wine-card-icon {
+		background: var(--wine-primary);
+	}
+
+	input:checked + .wine-card .wine-card-icon i {
+		color: white !important;
+	}
+
+	input:checked + .wine-card .wine-card-title {
+		color: var(--wine-dark);
+	}
+
+	/* Hover State Enhancement */
+	.wine-card:hover .wine-card-icon {
+		transform: scale(1.05);
+	}
+
+	.wine-card:hover .wine-card-icon i {
+		transform: scale(1.1);
+	}
+
+	/* Animation */
+	.wine-card {
+		animation: fadeInUp 0.5s ease-out;
+	}
+
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* Responsive Adjustments */
+	@media (max-width: 768px) {
+		.step-title {
+			font-size: 2rem;
+		}
+
+		.wine-card {
+			padding: 1.5rem 1rem;
+		}
+
+		.wine-card-icon {
+			width: 48px;
+			height: 48px;
+		}
+
+		.wine-card-icon i {
+			font-size: 1.25rem;
+		}
+
+		.wine-card-title {
+			font-size: 1.1rem;
+		}
+
+		.wine-card-description {
+			font-size: 0.9rem;
+		}
+	}
+
+	/* Validation styles */
+	.validation-error {
+		animation: fadeIn 0.3s ease-in-out;
+		border-left: 4px solid #dc3545;
+		margin-bottom: 1rem;
+	}
+
+	.validation-error[data-type="wine-types"] {
+		background-color: #fff3f3;
+		color: #dc3545;
+		padding: 0.75rem 1rem;
+		border-radius: 8px;
+		font-weight: 500;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.range-container {
+		position: relative;
+		padding: 20px 10px;
+	}
+
+	.range-slider {
+		position: relative;
+		height: 50px;
+	}
+
+	.range-slider input[type="range"] {
+		position: absolute;
+		width: 100%;
+		pointer-events: none;
+		appearance: none;
+		height: 2px;
+		background: none;
+	}
+
+	.range-slider input[type="range"]::-webkit-slider-thumb {
+		pointer-events: auto;
+		appearance: none;
+		width: 16px;
+		height: 16px;
+		background: var(--wine-primary);
+		border: 2px solid var(--wine-primary);
+		border-radius: 50%;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.range-slider input[type="range"]::-moz-range-thumb {
+		pointer-events: auto;
+		appearance: none;
+		width: 16px;
+		height: 16px;
+		background: var(--wine-primary);
+		border: 2px solid var(--wine-primary);
+		border-radius: 50%;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.range-slider input[type="range"]:nth-child(1) {
+		background: var(--wine-light);
+	}
+
+	.range-slider input[type="range"]:nth-child(2) {
+		background: var(--wine-primary);
+	}
+
+	.range-slider input[type="range"]::-webkit-slider-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.2);
+	}
+
+	.range-slider input[type="range"]::-moz-range-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.2);
+	}
+
+	/* Budget Range Styles */
+	.budget-range-section {
+		position: relative;
+		padding: 1rem 0;
+	}
+
+	.range-title {
+		color: var(--wine-primary);
+		font-size: 1.1rem;
+		font-weight: 500;
+	}
+
+	.price-display {
+		background: var(--wine-light);
+		padding: 0.5rem 1rem;
+		border-radius: 20px;
+		color: var(--wine-primary);
+		font-weight: 600;
+		font-size: 1.1rem;
+	}
+
+	.range-slider-container {
+		padding: 1rem 0.5rem;
+	}
+
+	.range-slider.wine-themed {
+		position: relative;
+		height: 40px;
+		width: 100%;
+	}
+
+	.range-slider__track {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		height: 4px;
+		width: 100%;
+		background: rgba(114, 47, 55, 0.1);
+		border-radius: 2px;
+	}
+
+	.range-slider__range-highlight {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		height: 4px;
+		background: var(--wine-primary);
+		border-radius: 2px;
+	}
+
+	.range-slider__range {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 100%;
+		-webkit-appearance: none;
+		pointer-events: none;
+		background: transparent;
+		outline: none;
+	}
+
+	.range-slider__range::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		pointer-events: auto;
+		width: 24px;
+		height: 24px;
+		background: white;
+		border: 2px solid var(--wine-primary);
+		border-radius: 50%;
+		cursor: pointer;
+		box-shadow: 0 2px 6px rgba(114, 47, 55, 0.1);
+		transition: all 0.2s ease;
+	}
+
+	.range-slider__range::-moz-range-thumb {
+		pointer-events: auto;
+		width: 24px;
+		height: 24px;
+		background: white;
+		border: 2px solid var(--wine-primary);
+		border-radius: 50%;
+		cursor: pointer;
+		box-shadow: 0 2px 6px rgba(114, 47, 55, 0.1);
+		transition: all 0.2s ease;
+	}
+
+	.range-slider__range::-webkit-slider-thumb:hover {
+		background: var(--wine-primary);
+		transform: scale(1.1);
+		box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.2);
+	}
+
+	.range-slider__range::-moz-range-thumb:hover {
+		background: var(--wine-primary);
+		transform: scale(1.1);
+		box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.2);
+	}
+
+	.range-limits {
+		color: var(--wine-primary);
+		opacity: 0.7;
+		font-size: 0.9rem;
+		padding: 0 0.5rem;
+	}
+
+	/* Remove any remaining blue colors */
+	.btn-primary {
+		background-color: var(--wine-primary);
+		border-color: var(--wine-primary);
+	}
+
+	.btn-primary:hover,
+	.btn-primary:focus {
+		background-color: var(--wine-secondary);
+		border-color: var(--wine-secondary);
+	}
+
+	.form-control:focus {
+		border-color: var(--wine-primary);
+		box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+	}
+
+	/* Update validation colors */
+	.is-invalid {
+		border-color: var(--wine-primary);
+	}
+
+	.is-invalid:focus {
+		border-color: var(--wine-primary);
+		box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+	}
+
+	/* Update range slider track colors */
+	.range-slider__range::-webkit-slider-runnable-track {
+		background: var(--wine-light);
+		height: 4px;
+		border-radius: 2px;
+	}
+
+	.range-slider__range::-moz-range-track {
+		background: var(--wine-light);
+		height: 4px;
+		border-radius: 2px;
+	}
+
+	.range-slider__range:focus {
+		outline: none;
+	}
+
+	.range-slider__range:focus::-webkit-slider-thumb {
+		box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.2);
+	}
+
+	.range-slider__range:focus::-moz-range-thumb {
+		box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.2);
+	}
+
+	/* Wine Type Icons */
+	.wine-card-icon {
+		width: 64px;
+		height: 64px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(114, 47, 55, 0.1);
+		border-radius: 50%;
+		margin-bottom: 1rem;
+		transition: all 0.3s ease;
+	}
+
+	.wine-card-icon i {
+		font-size: 1.75rem;
+		transition: all 0.3s ease;
+	}
+
+	/* Wine Type Specific Colors */
+	.text-danger {
+		color: #dc3545 !important;
+	}
+
+	.text-warning {
+		color: #ffc107 !important;
+	}
+
+	.text-pink {
+		color: #ff69b4 !important;
+	}
+
+	.text-amber {
+		color: #ffbf00 !important;
+	}
+
+	/* Selected State */
+	input:checked + .wine-card .wine-card-icon {
+		background: var(--wine-primary);
+	}
+
+	input:checked + .wine-card .wine-card-icon i {
+		color: white !important;
+	}
+
+	/* Hover Effects */
+	.wine-card:hover .wine-card-icon {
+		transform: scale(1.05);
+	}
+
+	.wine-card:hover .wine-card-icon i {
+		transform: scale(1.1);
+	}
+
+	/* Additional styles for Step 3 */
+	.preference-section {
+		margin-bottom: 3rem;
+	}
+
+	.section-subtitle {
+		color: var(--wine-dark);
+		font-size: 1.1rem;
+		opacity: 0.8;
+		margin-top: 0.5rem;
+	}
+
+	.preference-card {
+		background: white;
+		border-radius: 16px;
+		transition: all 0.3s ease;
+	}
+
+	.wine-card {
+		height: 100%;
+		padding: 2rem 1.5rem;
+		border: 2px solid rgba(114, 47, 55, 0.1);
+		border-radius: 16px;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.wine-card:hover {
+		transform: translateY(-4px);
+		border-color: var(--wine-primary);
+		box-shadow: 0 8px 24px rgba(114, 47, 55, 0.15);
+	}
+
+	input:checked + .wine-card {
+		background: var(--wine-light);
+		border-color: var(--wine-primary);
+		transform: translateY(-4px);
+		box-shadow: 0 8px 24px rgba(114, 47, 55, 0.15);
+	}
+
+	.budget-range-section {
+		padding: 2rem;
+		border-bottom: 1px solid rgba(114, 47, 55, 0.1);
+	}
+
+	.budget-range-section:last-child {
+		border-bottom: none;
+	}
+
+	.range-title {
+		color: var(--wine-primary);
+		font-size: 1.2rem;
+		font-weight: 500;
+	}
+
+	.price-display {
+		background: var(--wine-light);
+		padding: 0.5rem 1.5rem;
+		border-radius: 20px;
+		color: var(--wine-primary);
+		font-weight: 600;
+		font-size: 1.1rem;
+	}
+
+	/* Range slider enhancements */
+	.range-slider-container {
+		padding: 1.5rem 0.5rem 0.5rem;
+	}
+
+	.range-slider__track {
+		background: rgba(114, 47, 55, 0.1);
+	}
+
+	.range-slider__range-highlight {
+		background: var(--wine-primary);
+	}
+</style>
+{% endblock %} {% block page_scripts %}
+<script>
+	// Define utility functions
+	function updatePriceLabel(input) {
+		const labelId = input.dataset.label;
+		const label = document.getElementById(labelId);
+		if (label) {
+			label.textContent = `$${input.value}`;
+		}
+	}
+
+	function checkRegionLimit(checkbox) {
+		const maxRegions = 5;
+		const selectedRegions = document.querySelectorAll(
+			'input[name="wine_regions"]:checked'
+		);
+
+		if (selectedRegions.length > maxRegions) {
+			checkbox.checked = false;
+			alert(`You can only select up to ${maxRegions} regions.`);
+		}
+	}
+
+	document.addEventListener("DOMContentLoaded", function () {
+		// Form navigation setup
+		const form = document.getElementById("signupForm");
+		const steps = document.querySelectorAll(".form-step");
+		const progressBar = document.querySelector(".progress-bar");
+		const stepIndicators = document.querySelectorAll(".step");
+		const prevBtn = document.getElementById("prevBtn");
+		const nextBtn = document.getElementById("nextBtn");
+		const submitBtn = document.getElementById("submitBtn");
+		let currentStep = 1;
+
+		// Update steps function
+		function updateSteps() {
+			steps.forEach((step) => {
+				const stepNum = parseInt(step.dataset.step);
+				step.classList.toggle("d-none", stepNum !== currentStep);
+			});
+			updateProgress();
+		}
+
+		// Update progress bar
+		function updateProgress() {
+			const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
+			progressBar.style.width = `${progress}%`;
+
+			stepIndicators.forEach((step, index) => {
+				const stepNum = index + 1;
+				step.classList.toggle("active", stepNum === currentStep);
+				step.classList.toggle("completed", stepNum < currentStep);
+			});
+		}
+
+		// Update navigation buttons
+		function updateButtons() {
+			if (prevBtn && nextBtn && submitBtn) {
+				prevBtn.style.display = currentStep === 1 ? "none" : "block";
+				nextBtn.style.display = currentStep === steps.length ? "none" : "block";
+				submitBtn.style.display =
+					currentStep === steps.length ? "block" : "none";
+			}
+		}
+
+		// Navigation event listeners
+		if (nextBtn) {
+			nextBtn.addEventListener("click", function () {
+				if (validateStep(currentStep) && currentStep < steps.length) {
+					currentStep++;
+					updateSteps();
+					updateButtons();
+					if (currentStep === steps.length) {
+						updateReview();
+					}
+				}
+			});
+		}
+
+		if (prevBtn) {
+			prevBtn.addEventListener("click", function () {
+				if (currentStep > 1) {
+					currentStep--;
+					updateSteps();
+					updateButtons();
+				}
+			});
+		}
+
+		// Initialize form
+		updateSteps();
+		updateButtons();
+
+		// Password validation
+		const passwordField = document.getElementById("password");
+		const confirmPasswordField = document.getElementById("confirm_password");
+		const passwordToggles = document.querySelectorAll(".password-toggle");
+		const strengthIndicator = document.querySelector(".password-strength");
+		const strengthProgressBar =
+			strengthIndicator?.querySelector(".progress-bar");
+		const matchMessage = document.querySelector(".password-match-message");
+
+		// Password visibility toggles
+		passwordToggles?.forEach((toggle) => {
+			toggle.addEventListener("click", function () {
+				const passwordInput =
+					this.closest(".password-field").querySelector("input");
+				if (!passwordInput) return;
+
+				const type = passwordInput.getAttribute("type");
+				passwordInput.setAttribute(
+					"type",
+					type === "password" ? "text" : "password"
+				);
+				this.innerHTML =
+					type === "password"
+						? '<i class="far fa-eye-slash"></i>'
+						: '<i class="far fa-eye"></i>';
+			});
+		});
+
+		// Password strength checker
+		if (passwordField && strengthIndicator) {
+			passwordField.addEventListener("focus", () =>
+				strengthIndicator.classList.remove("d-none")
+			);
+			passwordField.addEventListener("input", checkPasswordStrength);
+		}
+
+		function checkPasswordStrength() {
+			const password = passwordField.value;
+			let strength = 0;
+
+			// Check requirements
+			const requirements = {
+				length: password.length >= 8,
+				number: /\d/.test(password),
+				uppercase: /[A-Z]/.test(password),
+				special: /[!@#$%^&*]/.test(password),
+			};
+
+			// Update requirement indicators and calculate strength
+			Object.entries(requirements).forEach(([req, isValid]) => {
+				const reqElement = document.querySelector(
+					`[data-requirement="${req}"]`
+				);
+				if (reqElement) {
+					reqElement.classList.toggle("valid", isValid);
+					if (isValid) strength += 25;
+				}
+			});
+
+			// Update progress bar
+			if (strengthProgressBar) {
+				strengthProgressBar.style.width = `${strength}%`;
+				strengthProgressBar.style.backgroundColor =
+					strength <= 25
+						? "#dc3545"
+						: strength <= 50
+						? "#ffc107"
+						: strength <= 75
+						? "#28a745"
+						: "#198754";
+			}
+
+			// Check password match if confirm field has value
+			if (confirmPasswordField.value) {
+				checkPasswordsMatch();
+			}
+		}
+
+		function checkPasswordsMatch() {
+			const isMatch = passwordField.value === confirmPasswordField.value;
+			matchMessage.classList.toggle("d-none", isMatch);
+			confirmPasswordField.classList.toggle("is-invalid", !isMatch);
+		}
+
+		// Add password match check listeners
+		if (confirmPasswordField) {
+			confirmPasswordField.addEventListener("input", checkPasswordsMatch);
+		}
+
+		// Initialize price range sliders
+		const regularBudget = document.getElementById("regular_budget");
+		const specialBudget = document.getElementById("special_budget");
+
+		if (regularBudget) {
+			updatePriceLabel(regularBudget);
+			regularBudget.addEventListener("input", function () {
+				updatePriceLabel(this);
+			});
+		}
+
+		if (specialBudget) {
+			updatePriceLabel(specialBudget);
+			specialBudget.addEventListener("input", function () {
+				updatePriceLabel(this);
+			});
+		}
+	});
+
+	// Utility functions
+	function updatePriceLabel(input) {
+		const labelId = input.dataset.label;
+		const label = document.getElementById(labelId);
+		if (label) {
+			label.textContent = `$${input.value}`;
+		}
+	}
+
+	function checkRegionLimit(checkbox) {
+		const maxRegions = 5;
+		const selectedRegions = document.querySelectorAll(
+			'input[name="wine_regions"]:checked'
+		);
+
+		if (selectedRegions.length > maxRegions) {
+			checkbox.checked = false;
+			alert(`You can only select up to ${maxRegions} regions.`);
+		}
+	}
+
+	function validateStep(step) {
+		const currentStepElement = document.querySelector(
+			`.form-step[data-step="${step}"]`
+		);
+		let isValid = true;
+
+		// Remove any existing error messages
+		const existingErrors =
+			currentStepElement.querySelectorAll(".validation-error");
+		existingErrors.forEach((error) => error.remove());
+
+		// Step-specific validations
+		switch (step) {
+			case 1:
+				// Account validation
+				const requiredFields =
+					currentStepElement.querySelectorAll("[required]");
+				requiredFields.forEach((field) => {
+					if (!field.value.trim()) {
+						isValid = false;
+						field.classList.add("is-invalid");
+					} else {
+						field.classList.remove("is-invalid");
+					}
+				});
+
+				// Password match validation
+				const password = document.getElementById("password");
+				const confirmPassword = document.getElementById("confirm_password");
+				if (
+					password &&
+					confirmPassword &&
+					password.value !== confirmPassword.value
+				) {
+					isValid = false;
+					confirmPassword.classList.add("is-invalid");
+					document
+						.querySelector(".password-match-message")
+						.classList.remove("d-none");
+				}
+				break;
+
+			case 2:
+				// Experience validation
+				const experienceSelected = document.querySelector(
+					'input[name="experience_level"]:checked'
+				);
+				if (!experienceSelected) {
+					isValid = false;
+					showValidationError(
+						"Please select your experience level",
+						currentStepElement
+					);
+				}
+
+				// Drinking frequency validation
+				const frequencySelected = document.querySelector(
+					'input[name="drinking_frequency"]:checked'
+				);
+				if (!frequencySelected) {
+					isValid = false;
+					showValidationError(
+						"Please select your drinking frequency",
+						currentStepElement
+					);
+				}
+				break;
+
+			case 3:
+				// Wine types validation
+				const wineTypesSelected = document.querySelectorAll(
+					'input[name="wine_types"]:checked'
+				);
+				if (wineTypesSelected.length === 0) {
+					isValid = false;
+					showValidationError(
+						"Please select at least one wine type",
+						currentStepElement
+					);
+				}
+				break;
+		}
+
+		return isValid;
+	}
+
+	function showValidationError(message, container) {
+		const errorDiv = document.createElement("div");
+		errorDiv.className = "alert alert-danger validation-error mt-3";
+		errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${message}`;
+		container.insertBefore(errorDiv, container.firstChild);
+	}
+
+	function updateReview() {
+		// Account Information
+		const nameElement = document.getElementById("review_name");
+		const emailElement = document.getElementById("review_email");
+		if (nameElement)
+			nameElement.textContent = document.getElementById("name").value;
+		if (emailElement)
+			emailElement.textContent = document.getElementById("email").value;
+
+		// Wine Experience
+		const experienceElement = document.getElementById("review_experience");
+		const frequencyElement = document.getElementById("review_frequency");
+		const wineTypesContainer = document.getElementById(
+			"review_wine_types_container"
+		);
+
+		// Experience Level
+		const experienceLevel = document.querySelector(
+			'input[name="experience_level"]:checked'
+		);
+		if (experienceElement && experienceLevel) {
+			experienceElement.textContent = experienceLevel.value
+				.replace("_", " ")
+				.toUpperCase();
+		}
+
+		// Drinking Frequency
+		const frequency = document.querySelector(
+			'input[name="drinking_frequency"]:checked'
+		);
+		if (frequencyElement && frequency) {
+			frequencyElement.textContent = frequency.value
+				.replace("_", " ")
+				.toUpperCase();
+		}
+
+		// Wine Types
+		if (wineTypesContainer) {
+			wineTypesContainer.innerHTML = "";
+			const selectedWineTypes = document.querySelectorAll(
+				'input[name="wine_types"]:checked'
+			);
+			selectedWineTypes.forEach((type) => {
+				const tag = document.createElement("span");
+				tag.className = "tag";
+				tag.innerHTML = `<i class="fas fa-wine-bottle"></i>${type.value
+					.replace("_", " ")
+					.toUpperCase()}`;
+				wineTypesContainer.appendChild(tag);
+			});
+		}
+
+		// Taste Profile
+		const bodyElement = document.getElementById("review_body");
+		const sweetnessElement = document.getElementById("review_sweetness");
+		const regionsContainer = document.getElementById(
+			"review_regions_container"
+		);
+		const regularBudgetElement = document.getElementById(
+			"review_regular_budget"
+		);
+		const specialBudgetElement = document.getElementById(
+			"review_special_budget"
+		);
+		const traitsContainer = document.getElementById("review_traits_container");
+
+		// Body Preference
+		const bodyPreference = document.querySelector(
+			'input[name="body_preference"]:checked'
+		);
+		if (bodyElement && bodyPreference) {
+			bodyElement.textContent = bodyPreference.value
+				.replace("_", " ")
+				.toUpperCase();
+		}
+
+		// Sweetness Level
+		const sweetnessLevel = document.querySelector(
+			'input[name="sweetness_level"]:checked'
+		);
+		if (sweetnessElement && sweetnessLevel) {
+			sweetnessElement.textContent = sweetnessLevel.value
+				.replace("_", " ")
+				.toUpperCase();
+		}
+
+		// Wine Regions
+		if (regionsContainer) {
+			regionsContainer.innerHTML = "";
+			const selectedRegions = document.querySelectorAll(
+				'input[name="wine_regions"]:checked'
+			);
+			selectedRegions.forEach((region) => {
+				const tag = document.createElement("span");
+				tag.className = "tag";
+				tag.innerHTML = `<i class="fas fa-globe-americas"></i>${region.value
+					.replace("_", " ")
+					.toUpperCase()}`;
+				regionsContainer.appendChild(tag);
+			});
+		}
+
+		// Budget Ranges
+		const regularMinVal = document.getElementById("regular_budget_min").value;
+		const regularMaxVal = document.getElementById("regular_budget_max").value;
+		const specialMinVal = document.getElementById("special_budget_min").value;
+		const specialMaxVal = document.getElementById("special_budget_max").value;
+
+		if (regularBudgetElement) {
+			regularBudgetElement.textContent = `${regularMinVal} - ${regularMaxVal}`;
+		}
+		if (specialBudgetElement) {
+			specialBudgetElement.textContent = `${specialMinVal} - ${specialMaxVal}`;
+		}
+
+		// Wine Traits
+		if (traitsContainer) {
+			traitsContainer.innerHTML = "";
+			const selectedTraits = document.querySelectorAll(
+				'input[name="wine_traits[]"]:checked'
+			);
+			selectedTraits.forEach((trait) => {
+				const tag = document.createElement("span");
+				tag.className = "tag";
+				tag.innerHTML = `<i class="fas fa-tag"></i>${trait.value
+					.replace("_", " ")
+					.toUpperCase()}`;
+				traitsContainer.appendChild(tag);
+			});
+		}
+	}
+
+	// Initialize range sliders
+	function initRangeSliders() {
+		// Regular budget range
+		const regularMin = document.getElementById("regular_budget_min");
+		const regularMax = document.getElementById("regular_budget_max");
+		const regularMinDisplay = document.getElementById(
+			"regular_budget_min_display"
+		);
+		const regularMaxDisplay = document.getElementById(
+			"regular_budget_max_display"
+		);
+
+		// Special budget range
+		const specialMin = document.getElementById("special_budget_min");
+		const specialMax = document.getElementById("special_budget_max");
+		const specialMinDisplay = document.getElementById(
+			"special_budget_min_display"
+		);
+		const specialMaxDisplay = document.getElementById(
+			"special_budget_max_display"
+		);
+
+		function updateRegularRange() {
+			const minVal = parseInt(regularMin.value);
+			const maxVal = parseInt(regularMax.value);
+
+			if (minVal > maxVal) {
+				regularMin.value = maxVal;
+			}
+
+			regularMinDisplay.textContent = `$${regularMin.value}`;
+			regularMaxDisplay.textContent = `$${regularMax.value}`;
+		}
+
+		function updateSpecialRange() {
+			const minVal = parseInt(specialMin.value);
+			const maxVal = parseInt(specialMax.value);
+
+			if (minVal > maxVal) {
+				specialMin.value = maxVal;
+			}
+
+			specialMinDisplay.textContent = `$${specialMin.value}`;
+			specialMaxDisplay.textContent = `$${specialMax.value}`;
+		}
+
+		regularMin.addEventListener("input", updateRegularRange);
+		regularMax.addEventListener("input", updateRegularRange);
+		specialMin.addEventListener("input", updateSpecialRange);
+		specialMax.addEventListener("input", updateSpecialRange);
+
+		// Initialize displays
+		updateRegularRange();
+		updateSpecialRange();
+	}
+
+	// Initialize everything when document is ready
+	document.addEventListener("DOMContentLoaded", function () {
+		initRangeSliders();
+
+		// Add step navigation listeners
+		const nextBtn = document.getElementById("nextBtn");
+		if (nextBtn) {
+			nextBtn.addEventListener("click", function () {
+				const currentStep = parseInt(
+					document.querySelector(".step.active").dataset.step
+				);
+				if (currentStep === 5) {
+					// Before moving to review step
+					updateReview();
+				}
+			});
+		}
+	});
+</script>
+{% endblock %}
