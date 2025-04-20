@@ -68,13 +68,47 @@ def dashboard():
 @login_required
 @admin_required
 def inventory():
-    wines = Wine.query.all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 20  # Number of items per page
+    
+    # Get filter parameters
+    wine_type = request.args.get('type')
+    region = request.args.get('region')
+    stock_filter = request.args.get('stock')
+    search = request.args.get('search')
+    
+    # Build query
+    query = Wine.query
+    
+    if wine_type:
+        query = query.filter(Wine.type == WineType(wine_type))
+    if region:
+        query = query.filter(Wine.region == WineRegion(region))
+    if stock_filter:
+        if stock_filter == 'low':
+            query = query.filter(Wine.stock <= 10)
+        elif stock_filter == 'out':
+            query = query.filter(Wine.stock == 0)
+        elif stock_filter == 'available':
+            query = query.filter(Wine.stock > 0)
+    if search:
+        query = query.filter(Wine.name.ilike(f'%{search}%'))
+    
+    # Get total count for pagination
+    total = query.count()
+    
+    # Get paginated results
+    wines = query.paginate(page=page, per_page=per_page, error_out=False)
+    
     return render_template('admin/inventory.html',
                          wines=wines,
                          wine_types=WineType,
                          wine_regions=WineRegion,
                          current_year=datetime.now().year,
-                         body_class='admin-page')
+                         body_class='admin-page',
+                         total=total,
+                         page=page,
+                         per_page=per_page)
 
 @admin.route('/wine/add', methods=['POST'])
 @login_required
@@ -156,4 +190,42 @@ def toggle_admin(user_id):
         user.is_admin = not user.is_admin
         db.session.commit()
         flash(f'Admin status for {user.username} has been {"granted" if user.is_admin else "revoked"}.', 'success')
-    return redirect(url_for('admin.users')) 
+    return redirect(url_for('admin.users'))
+
+@admin.route('/wines')
+@login_required
+@admin_required
+def wines():
+    page = request.args.get('page', 1, type=int)
+    per_page = 12  # Number of items per page for grid view
+    
+    # Get filter parameters
+    wine_type = request.args.get('type')
+    region = request.args.get('region')
+    search = request.args.get('search')
+    
+    # Build query
+    query = Wine.query
+    
+    if wine_type:
+        query = query.filter(Wine.type == WineType(wine_type))
+    if region:
+        query = query.filter(Wine.region == WineRegion(region))
+    if search:
+        query = query.filter(Wine.name.ilike(f'%{search}%'))
+    
+    # Get total count for pagination
+    total = query.count()
+    
+    # Get paginated results
+    wines = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template('admin/wines.html',
+                         wines=wines,
+                         wine_types=WineType,
+                         wine_regions=WineRegion,
+                         current_year=datetime.now().year,
+                         body_class='admin-page',
+                         total=total,
+                         page=page,
+                         per_page=per_page) 

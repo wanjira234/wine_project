@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% block title %}Wine Catalog{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Wine Expert" height="32">
+            <span>Admin Panel</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-section-title">MAIN</span>
+                <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('admin.users') }}" class="nav-link">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-section-title">CATALOG</span>
+                <a href="{{ url_for('admin.wines') }}" class="nav-link active">
+                    <i class="fas fa-wine-bottle"></i>
+                    <span>Wines</span>
+                </a>
+                <a href="{{ url_for('admin.inventory') }}" class="nav-link">
+                    <i class="fas fa-box"></i>
+                    <span>Inventory</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-left">
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Wine Catalog</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn-primary" data-bs-toggle="modal" data-bs-target="#addWineModal">
+                    <i class="fas fa-plus me-2"></i>Add Wine
+                </button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- Filters -->
+            <div class="filters-section mb-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <select class="form-select" id="typeFilter" onchange="updateFilters()">
+                            <option value="">All Types</option>
+                            {% for type in wine_types %}
+                            <option value="{{ type.value }}" {% if request.args.get('type') == type.value %}selected{% endif %}>{{ type.value|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="regionFilter" onchange="updateFilters()">
+                            <option value="">All Regions</option>
+                            {% for region in wine_regions %}
+                            <option value="{{ region.value }}" {% if request.args.get('region') == region.value %}selected{% endif %}>{{ region.value|replace('_', ' ')|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search wines..." value="{{ request.args.get('search', '') }}">
+                            <button class="btn btn-outline-secondary" type="button" onclick="updateFilters()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wine Grid -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+                {% for wine in wines.items %}
+                <div class="col">
+                    <div class="card h-100">
+                        {% if wine.image_url %}
+                        <img src="{{ wine.image_url }}" class="card-img-top wine-image" alt="{{ wine.name }}">
+                        {% else %}
+                        <div class="wine-image-placeholder">
+                            <i class="fas fa-wine-bottle"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ wine.name }}</h5>
+                            <p class="card-text text-muted">{{ wine.description[:100] }}...</p>
+                            <div class="wine-details">
+                                <span class="badge bg-primary">{{ wine.type.value|title }}</span>
+                                <span class="badge bg-secondary">{{ wine.region.value|replace('_', ' ')|title }}</span>
+                                {% if wine.year %}
+                                <span class="badge bg-info">{{ wine.year }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="wine-price mt-2">
+                                <strong>${{ "%.2f"|format(wine.price) }}</strong>
+                            </div>
+                            <div class="wine-stock mt-2">
+                                <span class="badge {% if wine.stock <= 0 %}bg-danger{% elif wine.stock <= 10 %}bg-warning{% else %}bg-success{% endif %}">
+                                    Stock: {{ wine.stock }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-group w-100">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editWine({{ wine.id }})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteWine({{ wine.id }})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if wines.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if wines.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.wines', page=wines.prev_num, type=request.args.get('type'), region=request.args.get('region'), search=request.args.get('search')) }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in wines.iter_pages() %}
+                        {% if page_num %}
+                            <li class="page-item {% if page_num == wines.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('admin.wines', page=page_num, type=request.args.get('type'), region=request.args.get('region'), search=request.args.get('search')) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if wines.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.wines', page=wines.next_num, type=request.args.get('type'), region=request.args.get('region'), search=request.args.get('search')) }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<!-- Add Wine Modal -->
+<div class="modal fade" id="addWineModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Wine</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addWineForm" action="{{ url_for('admin.add_wine') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="type" required>
+                            {% for type in wine_types %}
+                            <option value="{{ type.value }}">{{ type.value|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Region</label>
+                        <select class="form-select" name="region" required>
+                            {% for region in wine_regions %}
+                            <option value="{{ region.value }}">{{ region.value|replace('_', ' ')|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Year</label>
+                        <input type="number" class="form-control" name="year">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" class="form-control" name="price" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Initial Stock</label>
+                        <input type="number" class="form-control" name="stock" value="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Image URL</label>
+                        <input type="url" class="form-control" name="image_url">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="addWineForm" class="btn btn-primary">Add Wine</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wine-image {
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .wine-image-placeholder {
+        height: 200px;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        font-size: 3rem;
+    }
+
+    .wine-details {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .card {
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateFilters() {
+    const type = document.getElementById('typeFilter').value;
+    const region = document.getElementById('regionFilter').value;
+    const search = document.getElementById('searchInput').value;
+    
+    let url = new URL(window.location.href);
+    url.searchParams.set('type', type);
+    url.searchParams.set('region', region);
+    url.searchParams.set('search', search);
+    url.searchParams.set('page', '1'); // Reset to first page when filters change
+    
+    window.location.href = url.toString();
+}
+
+// Add event listener for Enter key in search input
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        updateFilters();
+    }
+});
+</script>
+{% endblock %} 

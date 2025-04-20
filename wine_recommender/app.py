@@ -6,6 +6,7 @@ from models.user.user import User
 from routes.auth import auth
 from routes.main import main
 from routes.admin import admin
+from commands import init_app as init_commands
 
 def create_app(config_name=None):
     """Create and configure the Flask application."""
@@ -47,6 +48,9 @@ def create_app(config_name=None):
     app.register_blueprint(auth)
     app.register_blueprint(main)
     app.register_blueprint(admin, url_prefix='/admin')
+    
+    # Initialize commands
+    init_commands(app)
     
     return app
 

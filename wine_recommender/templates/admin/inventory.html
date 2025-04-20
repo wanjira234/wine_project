@@ -2,104 +2,77 @@
 {% block title %}Wine Inventory{% endblock %}
 
 {% block content %}
-<div class="admin-container">
-    <!-- Sidebar -->
-    <aside class="admin-sidebar">
-        <div class="sidebar-brand">
-            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Wine Expert" height="32">
-            <span>Admin Panel</span>
-        </div>
-
-        <nav class="sidebar-nav">
-            <div class="nav-section">
-                <span class="nav-section-title">MAIN</span>
-                <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{{ url_for('admin.users') }}" class="nav-link">
-                    <i class="fas fa-users"></i>
-                    <span>Users</span>
-                </a>
-            </div>
-
-            <div class="nav-section">
-                <span class="nav-section-title">CATALOG</span>
-                <a href="{{ url_for('admin.inventory') }}" class="nav-link">
-                    <i class="fas fa-wine-bottle"></i>
-                    <span>Wines</span>
-                </a>
-                <a href="{{ url_for('admin.inventory') }}" class="nav-link active">
-                    <i class="fas fa-box"></i>
-                    <span>Inventory</span>
-                </a>
-            </div>
-        </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="admin-main">
-        <header class="admin-header">
-            <div class="header-left">
-                <button class="menu-toggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h1>Wine Inventory</h1>
-            </div>
-            <div class="header-right">
-                <button class="btn-primary" data-bs-toggle="modal" data-bs-target="#addWineModal">
-                    <i class="fas fa-plus me-2"></i>Add Wine
-                </button>
-            </div>
-        </header>
-
-        <div class="admin-content">
-            <!-- Filters -->
-            <div class="filters-section mb-4">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <select class="form-select" id="typeFilter">
-                            <option value="">All Types</option>
-                            {% for type in wine_types %}
-                            <option value="{{ type.value }}">{{ type.value|title }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="regionFilter">
-                            <option value="">All Regions</option>
-                            {% for region in wine_regions %}
-                            <option value="{{ region.value }}">{{ region.value|replace('_', ' ')|title }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="stockFilter">
-                            <option value="">All Stock Levels</option>
-                            <option value="low">Low Stock (≤ 10)</option>
-                            <option value="out">Out of Stock</option>
-                            <option value="available">In Stock</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="searchInput" placeholder="Search wines...">
-                            <button class="btn btn-outline-secondary" type="button">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Admin Menu</h5>
+                    <div class="list-group">
+                        <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-line me-2"></i> Dashboard
+                        </a>
+                        <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-users me-2"></i> Users
+                        </a>
+                        <a href="{{ url_for('admin.wines') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-wine-bottle me-2"></i> Wines
+                        </a>
+                        <a href="{{ url_for('admin.inventory') }}" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-box me-2"></i> Inventory
+                        </a>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Inventory Table -->
+        <!-- Main Content -->
+        <div class="col-lg-9">
             <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Wine Inventory</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWineModal">
+                        <i class="fas fa-plus me-2"></i>Add Wine
+                    </button>
+                </div>
                 <div class="card-body">
+                    <!-- Filters -->
+                    <div class="filters-section mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <select class="form-select" id="typeFilter" onchange="updateFilters()">
+                                    <option value="">All Types</option>
+                                    {% for type in wine_types %}
+                                    <option value="{{ type.value }}" {% if request.args.get('type') == type.value %}selected{% endif %}>{{ type.value|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="regionFilter" onchange="updateFilters()">
+                                    <option value="">All Regions</option>
+                                    {% for region in wine_regions %}
+                                    <option value="{{ region.value }}" {% if request.args.get('region') == region.value %}selected{% endif %}>{{ region.value|replace('_', ' ')|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Search wines..." value="{{ request.args.get('search', '') }}">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="updateFilters()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Table -->
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Wine</th>
+                                    <th>Name</th>
                                     <th>Type</th>
                                     <th>Region</th>
                                     <th>Year</th>
@@ -109,36 +82,28 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for wine in wines %}
+                                {% for wine in wines.items %}
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            {% if wine.image_url %}
-                                            <img src="{{ wine.image_url }}" alt="{{ wine.name }}" class="wine-thumbnail me-3">
-                                            {% else %}
-                                            <div class="wine-thumbnail-placeholder me-3">
+                                            <div class="wine-avatar me-3">
                                                 <i class="fas fa-wine-bottle"></i>
                                             </div>
-                                            {% endif %}
-                                            <div>
-                                                <div class="wine-name">{{ wine.name }}</div>
-                                                <div class="wine-description text-muted">{{ wine.description[:100] }}...</div>
-                                            </div>
+                                            {{ wine.name }}
                                         </div>
                                     </td>
-                                    <td>{{ wine.type.value|title }}</td>
-                                    <td>{{ wine.region.value|replace('_', ' ')|title }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ wine.type.value|title }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ wine.region.value|replace('_', ' ')|title }}</span>
+                                    </td>
                                     <td>{{ wine.year or 'N/A' }}</td>
                                     <td>${{ "%.2f"|format(wine.price) }}</td>
                                     <td>
-                                        <div class="d-flex align-items-center">
-                                            <span class="stock-badge {% if wine.stock <= 0 %}bg-danger{% elif wine.stock <= 10 %}bg-warning{% else %}bg-success{% endif %}">
-                                                {{ wine.stock }}
-                                            </span>
-                                            <button class="btn btn-sm btn-link update-stock-btn" data-wine-id="{{ wine.id }}">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        </div>
+                                        <span class="badge {% if wine.stock <= 0 %}bg-danger{% elif wine.stock <= 10 %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ wine.stock }}
+                                        </span>
                                     </td>
                                     <td>
                                         <div class="btn-group">
@@ -155,10 +120,39 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Pagination -->
+                    {% if wines.pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if wines.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.inventory', page=wines.prev_num, type=request.args.get('type'), region=request.args.get('region'), search=request.args.get('search')) }}">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in wines.iter_pages() %}
+                                {% if page_num %}
+                                    <li class="page-item {% if page_num == wines.page %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('admin.inventory', page=page_num, type=request.args.get('type'), region=request.args.get('region'), search=request.args.get('search')) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if wines.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.inventory', page=wines.next_num, type=request.args.get('type'), region=request.args.get('region'), search=request.args.get('search')) }}">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 </div>
 
 <!-- Add Wine Modal -->
@@ -224,126 +218,76 @@
 
 {% block extra_css %}
 <style>
-    /* Wine Thumbnail */
-    .wine-thumbnail {
-        width: 48px;
-        height: 48px;
-        object-fit: cover;
-        border-radius: 8px;
-    }
-
-    .wine-thumbnail-placeholder {
-        width: 48px;
-        height: 48px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
+    .wine-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #8B0000;
+        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #adb5bd;
     }
 
-    /* Stock Badge */
-    .stock-badge {
-        padding: 0.25rem 0.5rem;
-        border-radius: 9999px;
-        color: white;
-        font-size: 0.875rem;
-        min-width: 40px;
-        text-align: center;
+    .list-group-item {
+        border: none;
+        padding: 0.75rem 1rem;
+        color: #212529;
+        transition: all 0.3s ease;
     }
 
-    /* Table Styles */
-    .wine-name {
-        font-weight: 500;
+    .list-group-item:hover {
+        background-color: #FFF5F5;
+        color: #8B0000;
+        transform: translateX(5px);
     }
 
-    .wine-description {
-        font-size: 0.875rem;
-        max-width: 300px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    .list-group-item.active {
+        background-color: #8B0000;
+        border-color: #8B0000;
     }
 
-    /* Responsive */
-    @media (max-width: 991.98px) {
-        .wine-description {
-            max-width: 200px;
-        }
+    .list-group-item.active:hover {
+        transform: none;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        border-radius: 12px;
+    }
+
+    .btn-group .btn {
+        padding: 0.375rem 0.5rem;
+    }
+
+    .btn-group .btn:not(:last-child) {
+        margin-right: 0.25rem;
     }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Filter functionality
-    const typeFilter = document.getElementById('typeFilter');
-    const regionFilter = document.getElementById('regionFilter');
-    const stockFilter = document.getElementById('stockFilter');
-    const searchInput = document.getElementById('searchInput');
+function updateFilters() {
+    const type = document.getElementById('typeFilter').value;
+    const region = document.getElementById('regionFilter').value;
+    const search = document.getElementById('searchInput').value;
+    
+    let url = new URL(window.location.href);
+    url.searchParams.set('type', type);
+    url.searchParams.set('region', region);
+    url.searchParams.set('search', search);
+    url.searchParams.set('page', '1'); // Reset to first page when filters change
+    
+    window.location.href = url.toString();
+}
 
-    function filterWines() {
-        const type = typeFilter.value;
-        const region = regionFilter.value;
-        const stock = stockFilter.value;
-        const search = searchInput.value.toLowerCase();
-
-        const rows = document.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            const wineType = row.cells[1].textContent.toLowerCase();
-            const wineRegion = row.cells[2].textContent.toLowerCase();
-            const wineStock = parseInt(row.cells[5].querySelector('.stock-badge').textContent);
-            const wineName = row.cells[0].querySelector('.wine-name').textContent.toLowerCase();
-
-            let showRow = true;
-
-            if (type && wineType !== type.toLowerCase()) showRow = false;
-            if (region && wineRegion !== region.toLowerCase()) showRow = false;
-            if (stock) {
-                if (stock === 'low' && wineStock > 10) showRow = false;
-                if (stock === 'out' && wineStock > 0) showRow = false;
-                if (stock === 'available' && wineStock <= 0) showRow = false;
-            }
-            if (search && !wineName.includes(search)) showRow = false;
-
-            row.style.display = showRow ? '' : 'none';
-        });
+// Add event listener for Enter key in search input
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        updateFilters();
     }
-
-    typeFilter.addEventListener('change', filterWines);
-    regionFilter.addEventListener('change', filterWines);
-    stockFilter.addEventListener('change', filterWines);
-    searchInput.addEventListener('input', filterWines);
-
-    // Update stock functionality
-    const updateStockButtons = document.querySelectorAll('.update-stock-btn');
-    updateStockButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const wineId = this.dataset.wineId;
-            const currentStock = this.closest('td').querySelector('.stock-badge').textContent;
-            const newStock = prompt('Enter new stock quantity:', currentStock);
-            
-            if (newStock !== null && !isNaN(newStock)) {
-                fetch(`/admin/wine/${wineId}/update-stock`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ stock: parseInt(newStock) })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Failed to update stock');
-                    }
-                });
-            }
-        });
-    });
 });
 
 function editWine(wineId) {
