@@ -2,8 +2,10 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block extra_head %}
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<!-- jQuery from cdnjs (allowed domain) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Chart.js from cdnjs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
 <style>
 	.chart-container {
 		position: relative;
@@ -111,25 +113,35 @@
 
 {% block extra_js %}
 <script>
-console.log('Script started');
-console.log('Chart.js available:', typeof Chart !== 'undefined');
-
-// Simple chart initialization
 document.addEventListener('DOMContentLoaded', function() {
 	console.log('DOM loaded');
 	
+	// Make sure Chart.js is loaded
+	if (typeof Chart === 'undefined') {
+		console.error('Chart.js not loaded');
+		return;
+	}
+	
+	// Parse the data from Flask template variables
+	const chartData = {
+		wineTypes: {{ wine_types|tojson|safe }},
+		typeCounts: {{ type_counts|tojson|safe }},
+		stockLevels: {{ stock_levels|tojson|safe }},
+		stockCounts: {{ stock_counts|tojson|safe }}
+	};
+	
+	console.log('Data loaded:', chartData);
+
 	// Wine Types Chart
 	const wineTypesCtx = document.getElementById('wineTypesChart');
-	console.log('Wine types canvas element:', wineTypesCtx);
-	
 	if (wineTypesCtx) {
 		try {
-			new Chart(wineTypesCtx.getContext('2d'), {
+			const wineTypesChart = new Chart(wineTypesCtx, {
 				type: 'pie',
 				data: {
-					labels: ['Red', 'White', 'Rosé', 'Sparkling'],
+					labels: chartData.wineTypes,
 					datasets: [{
-						data: [40, 30, 20, 10],
+						data: chartData.typeCounts,
 						backgroundColor: ['#8B0000', '#FFD700', '#FF69B4', '#FFFFFF']
 					}]
 				},
@@ -143,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 			});
-			console.log('Wine types chart created successfully');
+			console.log('Wine types chart created');
 		} catch (error) {
 			console.error('Error creating wine types chart:', error);
 		}
@@ -151,17 +163,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Stock Levels Chart
 	const stockLevelCtx = document.getElementById('stockLevelChart');
-	console.log('Stock levels canvas element:', stockLevelCtx);
-	
 	if (stockLevelCtx) {
 		try {
-			new Chart(stockLevelCtx.getContext('2d'), {
+			const stockLevelChart = new Chart(stockLevelCtx, {
 				type: 'bar',
 				data: {
-					labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+					labels: chartData.stockLevels,
 					datasets: [{
-						data: [70, 20, 10],
-						backgroundColor: ['#28A745', '#FFC107', '#DC3545']
+						data: chartData.stockCounts,
+						backgroundColor: ['#DC3545', '#FFC107', '#28A745']
 					}]
 				},
 				options: {
@@ -174,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 			});
-			console.log('Stock levels chart created successfully');
+			console.log('Stock levels chart created');
 		} catch (error) {
 			console.error('Error creating stock levels chart:', error);
 		}

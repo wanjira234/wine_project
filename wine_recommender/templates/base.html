@@ -60,8 +60,6 @@
 			href="{{ url_for('static', filename='css/style.css') }}"
 		/>
 		{% block extra_css %}{% endblock %}
-		<!-- Bootstrap JS Bundle with Popper -->
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 		{% block head %}{% endblock %}
 	</head>
 	<body class="{{ body_class }}">
@@ -322,88 +320,16 @@
 			</div>
 		</footer>
 
-		<!-- Core Scripts -->
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+		<!-- Scripts -->
+		<!-- jQuery -->
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+		<!-- Bootstrap JS Bundle with Popper -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+		<!-- SweetAlert2 JS -->
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-		<!-- Custom Scripts -->
+		<!-- Custom JS -->
 		<script src="{{ url_for('static', filename='js/main.js') }}"></script>
-
-		<!-- Global Scripts -->
-		<script>
-			// Global AJAX setup for CSRF token
-			$(document).ready(function () {
-				$.ajaxSetup({
-					beforeSend: function (xhr, settings) {
-						if (
-							!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) &&
-							!this.crossDomain
-						) {
-							xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}");
-						}
-					},
-				});
-			});
-		</script>
-
-		<!-- Page-specific scripts -->
-		{% block page_scripts %}{% endblock %}
-
-		<script>
-			document.addEventListener("DOMContentLoaded", function () {
-				console.log("DOM Content Loaded");
-
-				// Check if Bootstrap is available
-				console.log(
-					"Bootstrap version:",
-					typeof bootstrap !== "undefined" ? bootstrap.version : "Not loaded"
-				);
-
-				// Find dropdown elements
-				var dropdownElementList = [].slice.call(
-					document.querySelectorAll('[data-bs-toggle="dropdown"]')
-				);
-				console.log("Found dropdown elements:", dropdownElementList);
-
-				// Initialize dropdowns and store them
-				var dropdowns = {};
-
-				try {
-					dropdownElementList.forEach(function (dropdownToggleEl) {
-						console.log("Initializing dropdown for:", dropdownToggleEl);
-						// Create dropdown instance
-						dropdowns[dropdownToggleEl.id] = new bootstrap.Dropdown(
-							dropdownToggleEl
-						);
-
-						// Add click handler
-						dropdownToggleEl.addEventListener("click", function (e) {
-							e.preventDefault();
-							e.stopPropagation();
-							console.log("Dropdown clicked:", this);
-							console.log("Dropdown target:", this.nextElementSibling);
-
-							// Manually toggle dropdown
-							dropdowns[this.id].toggle();
-						});
-					});
-					console.log("Dropdowns initialized:", dropdowns);
-				} catch (error) {
-					console.error("Error initializing dropdowns:", error);
-				}
-
-				// Close dropdowns when clicking outside
-				document.addEventListener("click", function (e) {
-					if (!e.target.matches('[data-bs-toggle="dropdown"]')) {
-						Object.values(dropdowns).forEach((dropdown) => {
-							dropdown.hide();
-						});
-					}
-				});
-			});
-		</script>
+		{% block extra_js %}{% endblock %}
 
 		<style>
 			/* Add these styles at the top of your existing styles */
