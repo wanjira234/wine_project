@@ -2,10 +2,6 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block extra_head %}
-<!-- jQuery from cdnjs (allowed domain) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<!-- Chart.js from cdnjs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
 <style>
 	.chart-container {
 		position: relative;
@@ -24,7 +20,7 @@
 {% block content %}
 <div class="container py-5">
 	<div class="row">
-	<!-- Sidebar -->
+		<!-- Sidebar -->
 		<div class="col-lg-3">
 			<div class="card">
 				<div class="card-body">
@@ -44,11 +40,11 @@
 						</a>
 						<a href="{{ url_for('admin.settings') }}" class="list-group-item list-group-item-action">
 							<i class="fas fa-cog me-2"></i> Settings
-				</a>
-			</div>
-				</div>
+						</a>
 					</div>
 				</div>
+			</div>
+		</div>
 
 		<!-- Main Content -->
 		<div class="col-lg-9">
@@ -80,16 +76,16 @@
 				</div>
 			</div>
 
-			<!-- Simple Charts -->
+			<!-- Charts -->
 			<div class="row">
 				<!-- Wine Types Distribution -->
 				<div class="col-md-6">
 					<div class="card">
-					<div class="card-body">
+						<div class="card-body">
 							<h5 class="card-title">Wine Types</h5>
 							<div class="chart-container">
 								<canvas id="wineTypesChart"></canvas>
-				</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -97,11 +93,11 @@
 				<!-- Stock Levels -->
 				<div class="col-md-6">
 					<div class="card">
-					<div class="card-body">
+						<div class="card-body">
 							<h5 class="card-title">Stock Levels</h5>
 							<div class="chart-container">
 								<canvas id="stockLevelChart"></canvas>
-				</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -109,85 +105,73 @@
 		</div>
 	</div>
 </div>
+
+<!-- Store chart data in hidden elements -->
+<div id="chartData" 
+     data-wine-types='{{ wine_types|tojson|safe }}'
+     data-type-counts='{{ type_counts|tojson|safe }}'
+     data-stock-levels='{{ stock_levels|tojson|safe }}'
+     data-stock-counts='{{ stock_counts|tojson|safe }}'
+     style="display: none;">
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-	console.log('DOM loaded');
-	
-	// Make sure Chart.js is loaded
-	if (typeof Chart === 'undefined') {
-		console.error('Chart.js not loaded');
-		return;
-	}
-	
-	// Parse the data from Flask template variables
-	const chartData = {
-		wineTypes: {{ wine_types|tojson|safe }},
-		typeCounts: {{ type_counts|tojson|safe }},
-		stockLevels: {{ stock_levels|tojson|safe }},
-		stockCounts: {{ stock_counts|tojson|safe }}
-	};
-	
-	console.log('Data loaded:', chartData);
+	// Get chart data from hidden elements
+	const chartData = document.getElementById('chartData');
+	const wineTypes = JSON.parse(chartData.dataset.wineTypes);
+	const typeCounts = JSON.parse(chartData.dataset.typeCounts);
+	const stockLevels = JSON.parse(chartData.dataset.stockLevels);
+	const stockCounts = JSON.parse(chartData.dataset.stockCounts);
 
 	// Wine Types Chart
 	const wineTypesCtx = document.getElementById('wineTypesChart');
 	if (wineTypesCtx) {
-		try {
-			const wineTypesChart = new Chart(wineTypesCtx, {
-				type: 'pie',
-				data: {
-					labels: chartData.wineTypes,
-					datasets: [{
-						data: chartData.typeCounts,
-						backgroundColor: ['#8B0000', '#FFD700', '#FF69B4', '#FFFFFF']
-					}]
-				},
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					plugins: {
-						legend: {
-							position: 'right'
-						}
+		new Chart(wineTypesCtx, {
+			type: 'pie',
+			data: {
+				labels: wineTypes,
+				datasets: [{
+					data: typeCounts,
+					backgroundColor: ['#8B0000', '#FFD700', '#FF69B4', '#FFFFFF']
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						position: 'right'
 					}
 				}
-			});
-			console.log('Wine types chart created');
-		} catch (error) {
-			console.error('Error creating wine types chart:', error);
-		}
+			}
+		});
 	}
 
 	// Stock Levels Chart
 	const stockLevelCtx = document.getElementById('stockLevelChart');
 	if (stockLevelCtx) {
-		try {
-			const stockLevelChart = new Chart(stockLevelCtx, {
-				type: 'bar',
-				data: {
-					labels: chartData.stockLevels,
-					datasets: [{
-						data: chartData.stockCounts,
-						backgroundColor: ['#DC3545', '#FFC107', '#28A745']
-					}]
-				},
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					scales: {
-						y: {
-							beginAtZero: true
-						}
+		new Chart(stockLevelCtx, {
+			type: 'bar',
+			data: {
+				labels: stockLevels,
+				datasets: [{
+					data: stockCounts,
+					backgroundColor: ['#DC3545', '#FFC107', '#28A745']
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					y: {
+						beginAtZero: true
 					}
 				}
-			});
-			console.log('Stock levels chart created');
-		} catch (error) {
-			console.error('Error creating stock levels chart:', error);
-		}
+			}
+		});
 	}
 });
 </script>

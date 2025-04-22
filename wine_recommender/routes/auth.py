@@ -1,10 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session, jsonify, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from forms.auth import RegistrationForm, LoginForm
 from models.user.user import User
 from models.user.preferences import UserPreference
 from werkzeug.security import generate_password_hash, check_password_hash
-from extensions import db
+from flask_sqlalchemy import SQLAlchemy
 from models.common.enums import (
     ExperienceLevel, DrinkingFrequency, WineType, BodyType, 
     SweetnessLevel, FlavorIntensity, WineTrait, WineTraitCategory,
@@ -13,26 +13,34 @@ from models.common.enums import (
 import pycountry
 from models.order import Order
 from models.order_item import OrderItem
+from extensions import db
 
 auth = Blueprint('auth', __name__)
+db = SQLAlchemy()
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        remember = True if request.form.get('remember') else False
-
-        user = User.query.filter_by(email=email).first()
-
-        if not user or not check_password_hash(user.password_hash, password):
-            flash('Please check your login details and try again.')
-            return redirect(url_for('auth.login'))
-
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        if not user:
+            flash('No account found with this email address. Please check your email or sign up.', 'warning')
+            return render_template('auth/login.html', form=form)
+            
+        if not check_password_hash(user.password_hash, form.password.data):
+            flash('Incorrect password. Please try again.', 'danger')
+            return render_template('auth/login.html', form=form)
+        
+        remember = form.remember.data
         login_user(user, remember=remember)
-        return redirect(url_for('main.profile'))
-
-    return render_template('auth/login.html')
+        next_page = request.args.get('next')
+        return redirect(next_page if next_page else url_for('main.index'))
+    
+    return render_template('auth/login.html', form=form)
 
 def get_trait_icon(trait):
     """Get the appropriate Font Awesome icon for a wine trait."""
@@ -121,21 +129,130 @@ def get_trait_categories():
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        email = request.form.get('email')
-        name = request.form.get('name')
-        password = request.form.get('password')
+        # Check if this is the final submission from review page
+        if request.form.get('terms'):  # Terms checkbox is only on review page
+            # Validate required fields
+            required_fields = ['email', 'password', 'name']
+            for field in required_fields:
+                if not request.form.get(field):
+                    flash(f'{field.title()} is required.', 'danger')
+                    return redirect(url_for('auth.signup'))
 
-        user = User.query.filter_by(email=email).first()
+            email = request.form.get('email')
+            password = request.form.get('password')
+            name = request.form.get('name')
+            
+            # Check if user already exists
+            if User.query.filter_by(email=email).first():
+                flash('Email already registered', 'warning')
+                return redirect(url_for('auth.signup'))
+            
+            try:
+                # Start a transaction
+                with db.session.begin_nested():
+                    # Create new user
+                    user = User.create_user(
+                        email=email,
+                        password=password,
+                        name=name
+                    )
+                    
+                    # Prepare preferences data according to our new structure
+                    wine_experience = {
+                        'experience_level': request.form.get('experience_level', ExperienceLevel.BEGINNER.value),
+                        'drinking_frequency': request.form.get('drinking_frequency', DrinkingFrequency.OCCASIONALLY.value),
+                        'wine_types': request.form.getlist('wine_types')
+                    }
+                    
+                    wine_style = {
+                        'body_preference': request.form.get('body_preference', BodyType.MEDIUM.value),
+                        'sweetness_level': request.form.get('sweetness_level', SweetnessLevel.DRY.value),
+                        'price_ranges': {
+                            'regular': {
+                                'min': float(request.form.get('regular_budget_min', 15)),
+                                'max': float(request.form.get('regular_budget_max', 50)),
+                                'currency': 'USD'
+                            },
+                            'special': {
+                                'min': float(request.form.get('special_budget_min', 50)),
+                                'max': float(request.form.get('special_budget_max', 200)),
+                                'currency': 'USD'
+                            }
+                        }
+                    }
+                    
+                    wine_traits = {
+                        'preferred_traits': request.form.getlist('wine_traits[]')
+                    }
+                    
+                    wine_regions = {
+                        'preferred_regions': request.form.getlist('wine_regions')
+                    }
 
-        if user:
-            flash('Email address already exists')
-            return redirect(url_for('auth.signup'))
-
-        new_user = User.create_user(email=email, name=name, password=password)
-
-        return redirect(url_for('auth.login'))
-
-    return render_template('auth/signup.html')
+                    # Update all preferences at once using the new structure
+                    user.preferences.wine_experience = wine_experience
+                    user.preferences.wine_style = wine_style
+                    user.preferences.wine_traits = wine_traits
+                    user.preferences.wine_regions = wine_regions
+                    # Save the changes
+                    user.preferences.save()                    
+                    # Log the user in
+                    login_user(user)
+                    flash('Account created successfully!', 'success')
+                    return redirect(url_for('main.index'))
+                    
+            except Exception as e:
+                print("\nEXCEPTION WHILE CREATING AND SAVING A NEW USER::   {}".format(e))
+                db.session.rollback()
+                flash('An error occurred while creating your account. Please try again.', 'danger')
+                return redirect(url_for('auth.signup'))
+                
+        # If not final submission, store form data in session
+        session['signup_data'] = request.form
+        return redirect(url_for('auth.review_signup'))
+        
+    # GET request - render the signup form
+    trait_categories = get_trait_categories()
+    wine_regions = [
+        {'value': region.value, 'label': format_display_name(region.value)}
+        for region in WineRegion
+    ]
+    
+    # Add the required enum values for Step 2
+    experience_levels = [
+        {
+            'value': level.value,
+            'name': format_display_name(level.value),
+            'description': get_experience_description(level)
+        }
+        for level in ExperienceLevel
+    ]
+    
+    drinking_frequencies = [
+        {
+            'value': freq.value,
+            'name': format_display_name(freq.value),
+            'description': get_frequency_description(freq)
+        }
+        for freq in DrinkingFrequency
+    ]
+    
+    wine_types = [
+        {
+            'value': wine_type.value,
+            'name': format_display_name(wine_type.value),
+            'icon': get_wine_type_icon(wine_type)
+        }
+        for wine_type in WineType
+    ]
+    
+    return render_template('auth/signup.html',
+                         trait_categories=trait_categories,
+                         get_trait_icon=get_trait_icon,
+                         wine_regions=wine_regions,
+                         experience_levels=experience_levels,
+                         drinking_frequencies=drinking_frequencies,
+                         wine_types=wine_types)
 
 def get_experience_description(level):
     """Get description for each experience level."""
@@ -215,6 +332,7 @@ def review_signup():
 @login_required
 def logout():
     logout_user()
+    flash('You have been logged out.', 'info')
     return redirect(url_for('main.index'))
 
 @auth.route('/forgot-password')
@@ -260,4 +378,75 @@ def delete_account():
     except Exception as e:
         db.session.rollback()
         flash('An error occurred while deleting your account. Please try again.', 'danger')
-        return redirect(url_for('main.profile')) 
+        return redirect(url_for('main.profile'))
+
+@auth.route('/signup/validate-step', methods=['POST'])
+def validate_signup_step():
+    try:
+        print("Received validation request")
+        data = request.get_json()
+        print("Request data:", data)
+        
+        if not data:
+            print("No data provided")
+            return jsonify({
+                'valid': False,
+                'errors': {'general': 'No data provided'}
+            }), 400
+
+        step = data.get('step')
+        step_data = data.get('data', {})
+        
+        print(f"Validating step {step} with data:", step_data)
+        
+        if not step:
+            print("No step number provided")
+            return jsonify({
+                'valid': False,
+                'errors': {'general': 'No step number provided'}
+            }), 400
+        
+        # Store step data in session
+        if 'signup_data' not in session:
+            session['signup_data'] = {}
+        session['signup_data'].update(step_data)
+        print("Updated session data:", session['signup_data'])
+        
+        # Validate step data
+        errors = {}
+        
+        if step == 1:
+            print("Validating step 1 (Account Information)")
+            if not step_data.get('email'):
+                errors['email'] = 'Email is required'
+            elif User.query.filter_by(email=step_data['email']).first():
+                errors['email'] = 'Email already registered'
+            if not step_data.get('password'):
+                errors['password'] = 'Password is required'
+            if not step_data.get('name'):
+                errors['name'] = 'Name is required'
+            if step_data.get('password') != step_data.get('confirm_password'):
+                errors['confirm_password'] = 'Passwords do not match'
+                
+        elif step == 2:
+            print("Validating step 2 (Experience & Preferences)")
+            if not step_data.get('experience_level'):
+                errors['experience_level'] = 'Please select your experience level'
+            if not step_data.get('drinking_frequency'):
+                errors['drinking_frequency'] = 'Please select your drinking frequency'
+            if not step_data.get('wine_types'):
+                errors['wine_types'] = 'Please select at least one wine type'
+        
+        print("Validation complete. Errors:", errors if errors else "None")
+        
+        return jsonify({
+            'valid': len(errors) == 0,
+            'errors': errors
+        })
+    except Exception as e:
+        print("Error during validation:", str(e))
+        current_app.logger.error(f"Error validating signup step: {str(e)}")
+        return jsonify({
+            'valid': False,
+            'errors': {'general': 'An error occurred while validating the form'}
+        }), 500 

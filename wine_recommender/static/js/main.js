@@ -132,11 +132,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Auto-hide alerts after 5 seconds
 window.setTimeout(function () {
-	$(".alert")
-		.fadeTo(500, 0)
-		.slideUp(500, function () {
-			$(this).remove();
-		});
+	document.querySelectorAll('.alert').forEach(alert => {
+		alert.style.transition = 'opacity 0.5s';
+		alert.style.opacity = '0';
+		setTimeout(() => {
+			alert.style.height = '0';
+			alert.style.margin = '0';
+			alert.style.padding = '0';
+			setTimeout(() => alert.remove(), 500);
+		}, 500);
+	});
 }, 5000);
 
 // Confirm dangerous actions
@@ -244,3 +249,83 @@ document.addEventListener("DOMContentLoaded", function () {
 		}, 5000);
 	});
 });
+
+// Signup form step validation
+async function validateSignupStep(step) {
+	const form = document.getElementById('signupForm');
+	const formData = new FormData(form);
+	const stepData = {};
+	
+	// Get data for current step
+	const currentStep = document.querySelector(`.form-step[data-step="${step}"]`);
+	const inputs = currentStep.querySelectorAll('input, select, textarea');
+	inputs.forEach(input => {
+		if (input.type === 'checkbox' || input.type === 'radio') {
+			if (input.checked) {
+				if (input.name.endsWith('[]')) {
+					const name = input.name.slice(0, -2);
+					if (!stepData[name]) stepData[name] = [];
+					stepData[name].push(input.value);
+				} else {
+					stepData[input.name] = input.value;
+				}
+			}
+		} else {
+			stepData[input.name] = input.value;
+		}
+	});
+
+	try {
+		// Get CSRF token from meta tag or hidden input
+		const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+						 document.querySelector('input[name="csrf_token"]')?.value;
+						 
+		if (!csrfToken) {
+			console.error('CSRF token not found');
+			return false;
+		}
+
+		const response = await fetch('/auth/signup/validate-step', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrfToken
+			},
+			credentials: 'same-origin',
+			body: JSON.stringify({
+				step: step,
+				data: stepData
+			})
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const result = await response.json();
+		
+		// Clear existing errors
+		currentStep.querySelectorAll('.validation-error').forEach(el => el.remove());
+		currentStep.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+		
+		if (!result.valid) {
+			// Show errors
+			Object.entries(result.errors).forEach(([field, message]) => {
+				const input = currentStep.querySelector(`[name="${field}"]`);
+				if (input) {
+					input.classList.add('is-invalid');
+					const errorDiv = document.createElement('div');
+					errorDiv.className = 'validation-error invalid-feedback';
+					errorDiv.textContent = message;
+					input.parentNode.appendChild(errorDiv);
+				}
+			});
+			return false;
+		}
+		
+		return true;
+	} catch (error) {
+		console.error('Error validating step:', error);
+		return false;
+	}
+}

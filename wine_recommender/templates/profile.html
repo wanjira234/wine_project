@@ -19,6 +19,17 @@ block content %}
 		</button>
 	</div>
 
+	<!-- Selected Wine Traits Section -->
+	<div class="preference-box">
+		<div class="preference-header">
+			<i class="fas fa-star"></i> Your Selected Wine Traits
+		</div>
+		<div class="preference-content">
+			{% if preferences.wine_traits %}
+				<div class="traits-container">
+					{% for category, traits in get_trait_categories().items() %}
+						<div class="trait-category">
+							<h4>{{ category }}</h4>
 	<div class="preferences-grid">
 		<!-- Wine Experience Section -->
 		<div class="preference-box">

@@ -1010,17 +1010,18 @@ content %}
 		border-radius: 8px;
 		padding: 1rem;
 		margin-top: 0.5rem;
+		border: 1px solid rgba(0, 0, 0, 0.1);
 	}
 
 	.password-strength .progress {
 		background-color: rgba(0, 0, 0, 0.1);
 		border-radius: 2px;
 		overflow: hidden;
+		margin-bottom: 1rem;
 	}
 
 	.password-strength .progress-bar {
-		background-color: #722f37;
-		transition: width 0.3s ease;
+		transition: width 0.3s ease, background-color 0.3s ease;
 	}
 
 	.requirements {
@@ -2360,14 +2361,11 @@ content %}
 	}
 
 	.range-slider__range {
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
 		width: 100%;
 		-webkit-appearance: none;
+		appearance: none;
 		pointer-events: none;
 		background: transparent;
-		outline: none;
 	}
 
 	.range-slider__range::-webkit-slider-thumb {
@@ -2599,523 +2597,221 @@ content %}
 </style>
 {% endblock %} {% block page_scripts %}
 <script>
-	// Define utility functions
-	function updatePriceLabel(input) {
-		const labelId = input.dataset.label;
-		const label = document.getElementById(labelId);
-		if (label) {
-			label.textContent = `$${input.value}`;
-		}
-	}
-
-	function checkRegionLimit(checkbox) {
-		const maxRegions = 5;
-		const selectedRegions = document.querySelectorAll(
-			'input[name="wine_regions"]:checked'
-		);
-
-		if (selectedRegions.length > maxRegions) {
-			checkbox.checked = false;
-			alert(`You can only select up to ${maxRegions} regions.`);
-		}
-	}
-
 	document.addEventListener("DOMContentLoaded", function () {
-		// Form navigation setup
+		// Form elements
 		const form = document.getElementById("signupForm");
 		const steps = document.querySelectorAll(".form-step");
 		const progressBar = document.querySelector(".progress-bar");
-		const stepIndicators = document.querySelectorAll(".step");
+		const stepperSteps = document.querySelectorAll(".stepper-steps .step");
 		const prevBtn = document.getElementById("prevBtn");
 		const nextBtn = document.getElementById("nextBtn");
 		const submitBtn = document.getElementById("submitBtn");
+
 		let currentStep = 1;
+		updateStep(currentStep);
 
-		// Update steps function
-		function updateSteps() {
-			steps.forEach((step) => {
-				const stepNum = parseInt(step.dataset.step);
-				step.classList.toggle("d-none", stepNum !== currentStep);
-			});
-			updateProgress();
-		}
+		// Password validation
+		const passwordInput = document.getElementById('password');
+		const confirmPasswordInput = document.getElementById('confirm_password');
+		const passwordMatchMessage = document.querySelector('.password-match-message');
 
-		// Update progress bar
-		function updateProgress() {
-			const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
-			progressBar.style.width = `${progress}%`;
-
-			stepIndicators.forEach((step, index) => {
-				const stepNum = index + 1;
-				step.classList.toggle("active", stepNum === currentStep);
-				step.classList.toggle("completed", stepNum < currentStep);
-			});
-		}
-
-		// Update navigation buttons
-		function updateButtons() {
-			if (prevBtn && nextBtn && submitBtn) {
-				prevBtn.style.display = currentStep === 1 ? "none" : "block";
-				nextBtn.style.display = currentStep === steps.length ? "none" : "block";
-				submitBtn.style.display =
-					currentStep === steps.length ? "block" : "none";
+		function validatePasswords() {
+			if (passwordInput.value !== confirmPasswordInput.value) {
+				passwordMatchMessage.classList.remove('d-none');
+				confirmPasswordInput.classList.add('is-invalid');
+				return false;
+			} else {
+				passwordMatchMessage.classList.add('d-none');
+				confirmPasswordInput.classList.remove('is-invalid');
+				return true;
 			}
 		}
 
-		// Navigation event listeners
-		if (nextBtn) {
-			nextBtn.addEventListener("click", function () {
-				if (validateStep(currentStep) && currentStep < steps.length) {
-					currentStep++;
-					updateSteps();
-					updateButtons();
-					if (currentStep === steps.length) {
-						updateReview();
+		if (passwordInput && confirmPasswordInput) {
+			passwordInput.addEventListener('input', validatePasswords);
+			confirmPasswordInput.addEventListener('input', validatePasswords);
+		}
+
+		// Next button click handler
+		nextBtn.addEventListener("click", function(e) {
+			e.preventDefault();
+			console.log("Next button clicked, validating step:", currentStep);
+
+			// Get current step's data
+			const stepElement = document.querySelector(`.form-step[data-step="${currentStep}"]`);
+			const stepData = {};
+			
+			// Collect form data for current step
+			stepElement.querySelectorAll('input, select, textarea').forEach(input => {
+				if (input.type === 'checkbox') {
+					if (input.checked) {
+						if (!stepData[input.name]) {
+							stepData[input.name] = [];
+						}
+						stepData[input.name].push(input.value);
 					}
+				} else if (input.type === 'radio') {
+					if (input.checked) {
+						stepData[input.name] = input.value;
+					}
+				} else if (input.name && input.name !== 'csrf_token') {
+					stepData[input.name] = input.value;
 				}
 			});
-		}
 
-		if (prevBtn) {
-			prevBtn.addEventListener("click", function () {
-				if (currentStep > 1) {
-					currentStep--;
-					updateSteps();
-					updateButtons();
+			console.log("Collected step data:", stepData);
+
+			// Send validation request using XMLHttpRequest
+			const xhr = new XMLHttpRequest();
+			xhr.open('POST', '/signup/validate-step', true);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+			xhr.setRequestHeader('X-CSRFToken', document.querySelector('input[name="csrf_token"]').value);
+
+			xhr.onload = function() {
+				if (xhr.status === 200) {
+					const response = JSON.parse(xhr.responseText);
+					console.log("Validation response:", response);
+					
+					if (response.valid) {
+						// Store step data
+						if (typeof(Storage) !== "undefined") {
+							let signupData = JSON.parse(localStorage.getItem('signupData') || '{}');
+							signupData[`step${currentStep}`] = stepData;
+							localStorage.setItem('signupData', JSON.stringify(signupData));
+						}
+
+						// Move to next step
+						currentStep++;
+						updateStep(currentStep);
+
+						// If we're on the review step, populate the review data
+						if (currentStep === 6) {
+							updateReview();
+						}
+					} else {
+						// Clear previous errors
+						stepElement.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+						stepElement.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+						// Display new errors
+						Object.entries(response.errors).forEach(([field, message]) => {
+							const input = stepElement.querySelector(`[name="${field}"]`) || 
+										stepElement.querySelector(`#${field}`);
+							if (input) {
+								input.classList.add('is-invalid');
+								const errorDiv = document.createElement('div');
+								errorDiv.className = 'invalid-feedback';
+								errorDiv.textContent = message;
+								input.parentElement.appendChild(errorDiv);
+							}
+						});
+					}
+				} else {
+					console.error('Server returned:', xhr.status);
+					// Show error message
+					const alertDiv = document.createElement('div');
+					alertDiv.className = 'alert alert-danger';
+					alertDiv.textContent = 'An error occurred while validating the form. Please try again.';
+					stepElement.insertBefore(alertDiv, stepElement.firstChild);
 				}
-			});
-		}
-
-		// Initialize form
-		updateSteps();
-		updateButtons();
-
-		// Password validation
-		const passwordField = document.getElementById("password");
-		const confirmPasswordField = document.getElementById("confirm_password");
-		const passwordToggles = document.querySelectorAll(".password-toggle");
-		const strengthIndicator = document.querySelector(".password-strength");
-		const strengthProgressBar =
-			strengthIndicator?.querySelector(".progress-bar");
-		const matchMessage = document.querySelector(".password-match-message");
-
-		// Password visibility toggles
-		passwordToggles?.forEach((toggle) => {
-			toggle.addEventListener("click", function () {
-				const passwordInput =
-					this.closest(".password-field").querySelector("input");
-				if (!passwordInput) return;
-
-				const type = passwordInput.getAttribute("type");
-				passwordInput.setAttribute(
-					"type",
-					type === "password" ? "text" : "password"
-				);
-				this.innerHTML =
-					type === "password"
-						? '<i class="far fa-eye-slash"></i>'
-						: '<i class="far fa-eye"></i>';
-			});
-		});
-
-		// Password strength checker
-		if (passwordField && strengthIndicator) {
-			passwordField.addEventListener("focus", () =>
-				strengthIndicator.classList.remove("d-none")
-			);
-			passwordField.addEventListener("input", checkPasswordStrength);
-		}
-
-		function checkPasswordStrength() {
-			const password = passwordField.value;
-			let strength = 0;
-
-			// Check requirements
-			const requirements = {
-				length: password.length >= 8,
-				number: /\d/.test(password),
-				uppercase: /[A-Z]/.test(password),
-				special: /[!@#$%^&*]/.test(password),
 			};
 
-			// Update requirement indicators and calculate strength
-			Object.entries(requirements).forEach(([req, isValid]) => {
-				const reqElement = document.querySelector(
-					`[data-requirement="${req}"]`
-				);
-				if (reqElement) {
-					reqElement.classList.toggle("valid", isValid);
-					if (isValid) strength += 25;
+			xhr.onerror = function() {
+				console.error('Request failed');
+				// Show error message
+				const alertDiv = document.createElement('div');
+				alertDiv.className = 'alert alert-danger';
+				alertDiv.textContent = 'Network error occurred. Please try again.';
+				stepElement.insertBefore(alertDiv, stepElement.firstChild);
+			};
+
+			// Send the request
+			xhr.send(JSON.stringify({
+				step: currentStep,
+				data: stepData
+			}));
+		});
+
+		// Previous button click handler
+		prevBtn.addEventListener("click", function(e) {
+			e.preventDefault();
+			if (currentStep > 1) {
+				currentStep--;
+				updateStep(currentStep);
+			}
+		});
+
+		// Submit button click handler
+		submitBtn.addEventListener("click", function(e) {
+			e.preventDefault();
+			form.submit();
+		});
+
+		function updateStep(step) {
+			// Hide all steps
+			steps.forEach(s => s.classList.add("d-none"));
+			stepperSteps.forEach(s => s.classList.remove("active", "completed"));
+			
+			// Show current step
+			const currentStepElement = document.querySelector(`.form-step[data-step="${step}"]`);
+			if (currentStepElement) {
+				currentStepElement.classList.remove("d-none");
+			}
+
+			// Update stepper
+			stepperSteps.forEach((s, index) => {
+				if (index + 1 < step) {
+					s.classList.add("completed");
+				} else if (index + 1 === step) {
+					s.classList.add("active");
 				}
 			});
 
 			// Update progress bar
-			if (strengthProgressBar) {
-				strengthProgressBar.style.width = `${strength}%`;
-				strengthProgressBar.style.backgroundColor =
-					strength <= 25
-						? "#dc3545"
-						: strength <= 50
-						? "#ffc107"
-						: strength <= 75
-						? "#28a745"
-						: "#198754";
-			}
+			const progress = ((step - 1) / (steps.length - 1)) * 100;
+			progressBar.style.width = `${progress}%`;
 
-			// Check password match if confirm field has value
-			if (confirmPasswordField.value) {
-				checkPasswordsMatch();
-			}
-		}
-
-		function checkPasswordsMatch() {
-			const isMatch = passwordField.value === confirmPasswordField.value;
-			matchMessage.classList.toggle("d-none", isMatch);
-			confirmPasswordField.classList.toggle("is-invalid", !isMatch);
-		}
-
-		// Add password match check listeners
-		if (confirmPasswordField) {
-			confirmPasswordField.addEventListener("input", checkPasswordsMatch);
-		}
-
-		// Initialize price range sliders
-		const regularBudget = document.getElementById("regular_budget");
-		const specialBudget = document.getElementById("special_budget");
-
-		if (regularBudget) {
-			updatePriceLabel(regularBudget);
-			regularBudget.addEventListener("input", function () {
-				updatePriceLabel(this);
-			});
-		}
-
-		if (specialBudget) {
-			updatePriceLabel(specialBudget);
-			specialBudget.addEventListener("input", function () {
-				updatePriceLabel(this);
-			});
-		}
-	});
-
-	// Utility functions
-	function updatePriceLabel(input) {
-		const labelId = input.dataset.label;
-		const label = document.getElementById(labelId);
-		if (label) {
-			label.textContent = `$${input.value}`;
-		}
-	}
-
-	function checkRegionLimit(checkbox) {
-		const maxRegions = 5;
-		const selectedRegions = document.querySelectorAll(
-			'input[name="wine_regions"]:checked'
-		);
-
-		if (selectedRegions.length > maxRegions) {
-			checkbox.checked = false;
-			alert(`You can only select up to ${maxRegions} regions.`);
-		}
-	}
-
-	function validateStep(step) {
-		const currentStepElement = document.querySelector(
-			`.form-step[data-step="${step}"]`
-		);
-		let isValid = true;
-
-		// Remove any existing error messages
-		const existingErrors =
-			currentStepElement.querySelectorAll(".validation-error");
-		existingErrors.forEach((error) => error.remove());
-
-		// Step-specific validations
-		switch (step) {
-			case 1:
-				// Account validation
-				const requiredFields =
-					currentStepElement.querySelectorAll("[required]");
-				requiredFields.forEach((field) => {
-					if (!field.value.trim()) {
-						isValid = false;
-						field.classList.add("is-invalid");
-					} else {
-						field.classList.remove("is-invalid");
-					}
-				});
-
-				// Password match validation
-				const password = document.getElementById("password");
-				const confirmPassword = document.getElementById("confirm_password");
-				if (
-					password &&
-					confirmPassword &&
-					password.value !== confirmPassword.value
-				) {
-					isValid = false;
-					confirmPassword.classList.add("is-invalid");
-					document
-						.querySelector(".password-match-message")
-						.classList.remove("d-none");
-				}
-				break;
-
-			case 2:
-				// Experience validation
-				const experienceSelected = document.querySelector(
-					'input[name="experience_level"]:checked'
-				);
-				if (!experienceSelected) {
-					isValid = false;
-					showValidationError(
-						"Please select your experience level",
-						currentStepElement
-					);
-				}
-
-				// Drinking frequency validation
-				const frequencySelected = document.querySelector(
-					'input[name="drinking_frequency"]:checked'
-				);
-				if (!frequencySelected) {
-					isValid = false;
-					showValidationError(
-						"Please select your drinking frequency",
-						currentStepElement
-					);
-				}
-				break;
-
-			case 3:
-				// Wine types validation
-				const wineTypesSelected = document.querySelectorAll(
-					'input[name="wine_types"]:checked'
-				);
-				if (wineTypesSelected.length === 0) {
-					isValid = false;
-					showValidationError(
-						"Please select at least one wine type",
-						currentStepElement
-					);
-				}
-				break;
-		}
-
-		return isValid;
-	}
-
-	function showValidationError(message, container) {
-		const errorDiv = document.createElement("div");
-		errorDiv.className = "alert alert-danger validation-error mt-3";
-		errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${message}`;
-		container.insertBefore(errorDiv, container.firstChild);
+			// Update buttons
+			prevBtn.style.display = step === 1 ? "none" : "block";
+			nextBtn.style.display = step === steps.length ? "none" : "block";
+			submitBtn.style.display = step === steps.length ? "block" : "none";
 	}
 
 	function updateReview() {
-		// Account Information
-		const nameElement = document.getElementById("review_name");
-		const emailElement = document.getElementById("review_email");
-		if (nameElement)
-			nameElement.textContent = document.getElementById("name").value;
-		if (emailElement)
-			emailElement.textContent = document.getElementById("email").value;
+			const signupData = JSON.parse(localStorage.getItem('signupData') || '{}');
 
-		// Wine Experience
-		const experienceElement = document.getElementById("review_experience");
-		const frequencyElement = document.getElementById("review_frequency");
-		const wineTypesContainer = document.getElementById(
-			"review_wine_types_container"
-		);
+			// Update account information
+			if (signupData.step1) {
+				document.getElementById('review_name').textContent = signupData.step1.name || '';
+				document.getElementById('review_email').textContent = signupData.step1.email || '';
+			}
 
-		// Experience Level
-		const experienceLevel = document.querySelector(
-			'input[name="experience_level"]:checked'
-		);
-		if (experienceElement && experienceLevel) {
-			experienceElement.textContent = experienceLevel.value
-				.replace("_", " ")
-				.toUpperCase();
-		}
-
-		// Drinking Frequency
-		const frequency = document.querySelector(
-			'input[name="drinking_frequency"]:checked'
-		);
-		if (frequencyElement && frequency) {
-			frequencyElement.textContent = frequency.value
-				.replace("_", " ")
-				.toUpperCase();
-		}
-
-		// Wine Types
-		if (wineTypesContainer) {
-			wineTypesContainer.innerHTML = "";
-			const selectedWineTypes = document.querySelectorAll(
-				'input[name="wine_types"]:checked'
-			);
-			selectedWineTypes.forEach((type) => {
-				const tag = document.createElement("span");
-				tag.className = "tag";
-				tag.innerHTML = `<i class="fas fa-wine-bottle"></i>${type.value
-					.replace("_", " ")
-					.toUpperCase()}`;
+			// Update experience information
+			if (signupData.step2) {
+				document.getElementById('review_experience').textContent = 
+					formatDisplayName(signupData.step2.experience_level) || '';
+				document.getElementById('review_frequency').textContent = 
+					formatDisplayName(signupData.step2.drinking_frequency) || '';
+				
+				// Update wine types
+				const wineTypesContainer = document.getElementById('review_wine_types_container');
+				if (wineTypesContainer && signupData.step2.wine_types) {
+					wineTypesContainer.innerHTML = '';
+					signupData.step2.wine_types.forEach(type => {
+						const tag = document.createElement('span');
+						tag.className = 'tag';
+						tag.textContent = formatDisplayName(type);
 				wineTypesContainer.appendChild(tag);
 			});
 		}
-
-		// Taste Profile
-		const bodyElement = document.getElementById("review_body");
-		const sweetnessElement = document.getElementById("review_sweetness");
-		const regionsContainer = document.getElementById(
-			"review_regions_container"
-		);
-		const regularBudgetElement = document.getElementById(
-			"review_regular_budget"
-		);
-		const specialBudgetElement = document.getElementById(
-			"review_special_budget"
-		);
-		const traitsContainer = document.getElementById("review_traits_container");
-
-		// Body Preference
-		const bodyPreference = document.querySelector(
-			'input[name="body_preference"]:checked'
-		);
-		if (bodyElement && bodyPreference) {
-			bodyElement.textContent = bodyPreference.value
-				.replace("_", " ")
-				.toUpperCase();
-		}
-
-		// Sweetness Level
-		const sweetnessLevel = document.querySelector(
-			'input[name="sweetness_level"]:checked'
-		);
-		if (sweetnessElement && sweetnessLevel) {
-			sweetnessElement.textContent = sweetnessLevel.value
-				.replace("_", " ")
-				.toUpperCase();
-		}
-
-		// Wine Regions
-		if (regionsContainer) {
-			regionsContainer.innerHTML = "";
-			const selectedRegions = document.querySelectorAll(
-				'input[name="wine_regions"]:checked'
-			);
-			selectedRegions.forEach((region) => {
-				const tag = document.createElement("span");
-				tag.className = "tag";
-				tag.innerHTML = `<i class="fas fa-globe-americas"></i>${region.value
-					.replace("_", " ")
-					.toUpperCase()}`;
-				regionsContainer.appendChild(tag);
-			});
-		}
-
-		// Budget Ranges
-		const regularMinVal = document.getElementById("regular_budget_min").value;
-		const regularMaxVal = document.getElementById("regular_budget_max").value;
-		const specialMinVal = document.getElementById("special_budget_min").value;
-		const specialMaxVal = document.getElementById("special_budget_max").value;
-
-		if (regularBudgetElement) {
-			regularBudgetElement.textContent = `${regularMinVal} - ${regularMaxVal}`;
-		}
-		if (specialBudgetElement) {
-			specialBudgetElement.textContent = `${specialMinVal} - ${specialMaxVal}`;
-		}
-
-		// Wine Traits
-		if (traitsContainer) {
-			traitsContainer.innerHTML = "";
-			const selectedTraits = document.querySelectorAll(
-				'input[name="wine_traits[]"]:checked'
-			);
-			selectedTraits.forEach((trait) => {
-				const tag = document.createElement("span");
-				tag.className = "tag";
-				tag.innerHTML = `<i class="fas fa-tag"></i>${trait.value
-					.replace("_", " ")
-					.toUpperCase()}`;
-				traitsContainer.appendChild(tag);
-			});
-		}
-	}
-
-	// Initialize range sliders
-	function initRangeSliders() {
-		// Regular budget range
-		const regularMin = document.getElementById("regular_budget_min");
-		const regularMax = document.getElementById("regular_budget_max");
-		const regularMinDisplay = document.getElementById(
-			"regular_budget_min_display"
-		);
-		const regularMaxDisplay = document.getElementById(
-			"regular_budget_max_display"
-		);
-
-		// Special budget range
-		const specialMin = document.getElementById("special_budget_min");
-		const specialMax = document.getElementById("special_budget_max");
-		const specialMinDisplay = document.getElementById(
-			"special_budget_min_display"
-		);
-		const specialMaxDisplay = document.getElementById(
-			"special_budget_max_display"
-		);
-
-		function updateRegularRange() {
-			const minVal = parseInt(regularMin.value);
-			const maxVal = parseInt(regularMax.value);
-
-			if (minVal > maxVal) {
-				regularMin.value = maxVal;
 			}
-
-			regularMinDisplay.textContent = `$${regularMin.value}`;
-			regularMaxDisplay.textContent = `$${regularMax.value}`;
 		}
 
-		function updateSpecialRange() {
-			const minVal = parseInt(specialMin.value);
-			const maxVal = parseInt(specialMax.value);
-
-			if (minVal > maxVal) {
-				specialMin.value = maxVal;
-			}
-
-			specialMinDisplay.textContent = `$${specialMin.value}`;
-			specialMaxDisplay.textContent = `$${specialMax.value}`;
-		}
-
-		regularMin.addEventListener("input", updateRegularRange);
-		regularMax.addEventListener("input", updateRegularRange);
-		specialMin.addEventListener("input", updateSpecialRange);
-		specialMax.addEventListener("input", updateSpecialRange);
-
-		// Initialize displays
-		updateRegularRange();
-		updateSpecialRange();
-	}
-
-	// Initialize everything when document is ready
-	document.addEventListener("DOMContentLoaded", function () {
-		initRangeSliders();
-
-		// Add step navigation listeners
-		const nextBtn = document.getElementById("nextBtn");
-		if (nextBtn) {
-			nextBtn.addEventListener("click", function () {
-				const currentStep = parseInt(
-					document.querySelector(".step.active").dataset.step
-				);
-				if (currentStep === 5) {
-					// Before moving to review step
-					updateReview();
-				}
-			});
+		function formatDisplayName(value) {
+			if (!value) return '';
+			return value.replace(/_/g, ' ').replace(/\w\S*/g, 
+				txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+			);
 		}
 	});
 </script>

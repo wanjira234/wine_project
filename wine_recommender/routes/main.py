@@ -84,6 +84,18 @@ def contact():
 @login_required
 def profile():
     """Display user profile and preferences."""
+    # Get user preferences
+    user_prefs = current_user.get_preferences()
+    
+    # Print selected wine traits
+    print("\n=============== USER'S SELECTED WINE TRAITS ================")
+    print("Experience Level:", user_prefs.get('experience', {}).get('experience_level'))
+    print("Wine Types:", user_prefs.get('wine_types', []))
+    print("Preferred Traits:", user_prefs.get('wine_traits', []))
+    print("Preferred Regions:", user_prefs.get('wine_regions', []))
+    print("Wine Style:", user_prefs.get('wine_style', {}))
+    print("==========================================================\n")
+    
     return render_template('profile.html', 
                          preferences={
                              'experience': current_user.get_preferences().get('experience').get('experience_level'),
